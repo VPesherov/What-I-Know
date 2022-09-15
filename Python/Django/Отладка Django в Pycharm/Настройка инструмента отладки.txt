@@ -1,0 +1,11 @@
+1)Жмём edir configurations
+
+2)Жмём на плюсик и выбираем питон
+
+3)В параметры пишем либо manage.py runserver или просто runserver
+
+4)working directory выбираем проект
+
+5)выбираем если надо интерпретатор
+
+6)Если нужен script path то выбираем файл manage.py

@@ -1,0 +1,34 @@
+1)В таком коде возникает избыточность, постоянно нужно писать horoscope    
+path('horoscope/leo/', views_horoscope.leo),
+path('horoscope/scorpio/', views_horoscope.scorpio),
+path('horoscope/aries/', views_horoscope.aries),
+path('horoscope/taurus/', views_horoscope.taurus),
+
+2)Из-за этого было придумано создание собственного url config
+использование функции include
+
+из django.urls import include
+
+в path('horoscope/', include('тут будет url'))
+
+3)Затем в нужном приложении создаём питоновский файл urls.py
+и прописываем нужныу url
+
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('leo/', views.leo),
+    path('scrorpio/', views.scorpio),
+    path('aries/', views.aries),
+    path('taurus/', views.taurus),
+]
+
+4)Затем возвращаемся в urls.py из проекта
+
+и прописываем
+
+path('horoscope/', include('horoscope.urls'))
+
+то есть название приложение + . + название файлика
+

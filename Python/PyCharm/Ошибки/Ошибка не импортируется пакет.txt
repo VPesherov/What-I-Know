@@ -1,0 +1,6 @@
+Installing packages into 'Python 3.10' requires administrator privileges. 
+Configure a per-project virtual environment as your project interpreter to avoid installing packages to a protected area 
+of the file system.
+
+Короче решил тем что установил python в другую директорию для этого нужно выбрать кастомную установку
+и установить в папку поближе
