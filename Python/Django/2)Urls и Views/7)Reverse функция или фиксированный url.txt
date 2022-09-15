@@ -1,0 +1,47 @@
+Допустим у нас есть вот такая функция
+
+def get_info_about_zodiac_sign_by_number(request, sign_zodiac: int):
+    zodiacs = list(zodiac_dict)
+    if sign_zodiac > len(zodiacs):
+        return HttpResponseNotFound(f'Был передан неправильный номер {sign_zodiac}')
+    name_zodiac = zodiacs[sign_zodiac - 1]
+    return HttpResponseRedirect(f'/horoscope/{name_zodiac}/')
+
+В данной строчке
+
+return HttpResponseRedirect(f'/horoscope/{name_zodiac}/')
+
+Здесь у нас захардкожен url, /horoscope/ если изменить его то код может полететь полностью
+и переносить не туда и искать что да где неудобно и его было бы зафиксировать.
+
+И для этого нужно запомнить ссылку, в джанго есть специальный инструмент, и мы
+можем задать имя чтоб запомнить
+
+Пример
+
+path('<str:sign_zodiac>/', views.get_info_about_zodiac_sign, name='horoscope-name'),
+
+присвоили name='horoscope-name'
+
+затем с помощью функции reverse из django.urls
+
+и теперь наша функция такая
+def get_info_about_zodiac_sign_by_number(request, sign_zodiac: int):
+    zodiacs = list(zodiac_dict)
+    if sign_zodiac > len(zodiacs):
+        return HttpResponseNotFound(f'Был передан неправильный номер {sign_zodiac}')
+    name_zodiac = zodiacs[sign_zodiac - 1]
+    redirect_url = reverse("horoscope-name", args=(name_zodiac, ))#изменено
+    return HttpResponseRedirect(redirect_url)#изменено
+
+функция reverse ищет наше имя "horoscope-name", берёт наше имя из главного приложения (my_page)
+и пересобирает наше url
+также в этой функции есть параметр args, в который мы передаём аргументы если они нужны нашему view,
+аргументы обязательно должны лежать в упорядоченной коллекции, например кортеж или список, и
+количество аргументов зависит от того сколько ваша функция принимает значений
+
+
+
+
+
+

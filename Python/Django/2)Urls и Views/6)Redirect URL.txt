@@ -1,0 +1,12 @@
+Условн у нас есть 12 знаков зодиака, и допустим мы хотим по номеру обращаться к знаку то есть:
+Вместо horoscope/leo/ мы хотим horoscope/1/ и чтоб перебросило на нужный знак
+
+Для этого есть функция HttpResponseRedirect, используем её, но для начала вычленяем нужный знак
+зодиака по номеру и передаём уже его
+
+def get_info_about_zodiac_sign_by_number(request, sign_zodiac: int):
+    zodiacs = list(zodiac_dict)
+    if sign_zodiac > len(zodiacs):
+        return HttpResponseNotFound(f'Был передан неправильный номер {sign_zodiac}')
+    name_zodiac = zodiacs[sign_zodiac - 1]
+    return HttpResponseRedirect(f'/horoscope/{name_zodiac}/')

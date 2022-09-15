@@ -1,3 +1,17 @@
 HttpResponse('текст') # вывод чего-то на страницу и выводит статус 200
 
 HttpResonseNotFound('текст') # выводит что-то на страницу но со статусом 404
+
+HttpResponseRedirect(f'/horoscope/{name_zodiac}/') # Функция которая
+производит редирект на нужный адресс, пример: 
+
+def get_info_about_zodiac_sign_by_number(request, sign_zodiac: int):
+    zodiacs = list(zodiac_dict)
+    if sign_zodiac > len(zodiacs):
+        return HttpResponseNotFound(f'Был передан неправильный 
+номер {sign_zodiac}')
+    name_zodiac = zodiacs[sign_zodiac - 1]
+    return HttpResponseRedirect(f'/horoscope/{name_zodiac}/')
+
+Если мы например хоти обратиться по цифре и чтоб нас перекидывало на нужный
+знак порядкого номера
