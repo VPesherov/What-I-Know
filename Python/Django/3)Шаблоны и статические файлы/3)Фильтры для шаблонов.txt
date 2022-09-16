@@ -1,0 +1,22 @@
+#подробнее
+https://docs.djangoproject.com/en/4.1/ref/templates/builtins/#built-in-filter-reference
+На странице HTML можно использовать специальные фильтры
+например
+
+{{value | capfirst}} # делает первую букву значения value большой
+{{value | cut:"значение"}} # удаляет "значение" из вашей строки value
+{{value | default: "nothing"}} # если в value приходит ложное или пустое значение выведется "nothing"
+{{value | default_if_none: "nothing"}} # только если пустое значение приходит, выводится "nothing"
+{{value | first} #возвращает из кортежа/списка первое значение аналогично для last
+{{value | join: "/"} #позволяет объеденить коллекцию по разделителю
+['a','b','c'] -> 'a/b/c'
+{{value | length}} #возвращает длину коллекции
+{{value | length_is: "4"}} # проверяет длину строки
+
+
+
+
+
+
+
+
