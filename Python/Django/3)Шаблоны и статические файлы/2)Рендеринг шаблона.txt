@@ -1,0 +1,50 @@
+DTL - Django Template Language
+Передача данных в html с помощью шаблонов django
+
+Для этого:
+1)Мы собираем данные в словарь
+sign = 16
+description = 10
+data = {
+	'sign': sign_zodiac,
+	'description_zodiac' : description # отсюда передаётся
+}
+2)с помощью функции render возвращаем данные на страницу html
+return render(request, 'horoscope/info_zodiac.html', context=data)
+
+3)На страницы html в нужных местах указываем ключ из нашего словаря
+
+Пример:
+<h1>{{ description_zodiac }}</h1> # сюда отдаётся значение ключа
+<h2>{{ sign }} </h2>
+
+и тогда из словаря подставится его значение
+
+но если мы допустим передаём словать
+data = {
+	'my_dict' : {'name' : 'Jack', 'age' : 40}
+}
+
+то обращаться к его элементам вот так(обращаться к экземпляру класса)
+
+<h1>
+	{{ my_dict.name }}
+</h1>
+
+если хотим передать класс то
+
+@dataclass
+class Person:
+	name: str
+	age: int
+
+	def __str__(self):
+		return f'Имя - {self.name}, возраст {self.age}'
+
+data = {
+	'my_class': Person('Will', 40)
+}
+
+<h1>{{ my_class }} {{ my_class.age }}</h1>
+Будет в результате
+Имя Will, возраст 40 40

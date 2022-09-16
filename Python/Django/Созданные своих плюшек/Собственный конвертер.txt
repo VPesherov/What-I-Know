@@ -1,0 +1,29 @@
+
+path('<int:sign_zodiac>', views.get_info)
+int - в данном случае конвертер
+
+Посмотреть все конвертеры можно импортировав
+from django.urls import converters
+зажимаем ctrl и жмём на converters
+
+в словаре DEFAULT_CONVERTERS, регестрируются конвертеры
+сам конвертер представляет собой класс
+
+class IntConverter:
+    regex = "[0-9]+" #тут ищется сопоставление ващей строки по регулярке
+
+    def to_python(self, value): #здесь уже преобразуется в число
+        return int(value)
+
+    def to_url(self, value): #а тут преобразуется в url, например при использовании reverse
+        return str(value)
+
+чтоб создать конвертер, в своёми приложении создаём converters.py
+
+затем его нужно зарегестрировать(в файлике с url)
+from django.urls import path, register_converter
+from . import converters
+и тогда
+
+path('<yyyy:sign_zodiac>', views.get_info)
+ 
