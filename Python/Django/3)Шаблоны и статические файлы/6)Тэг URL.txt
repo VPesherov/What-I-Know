@@ -1,0 +1,23 @@
+Тэг url - тэг для переадрессации на нужную страницу по параметрам
+пример
+
+{% for zodiac in zodiacs_list %}
+	<li><a href="{% url 'horoscope-name' sign_zodiac=zodiac %}">{{zodiac|capfirst}}</a></li>
+{% endfor %}
+
+тэг url состоит из
+{% url 'имени куда перекинуть' переменные которая дожна принимать view(если эти переменные есть) %}
+
+в данном примере
+<li><a href="{% url 'horoscope-name' sign_zodiac=zodiac %}">{{zodiac|capfirst}}</a></li>
+'horoscope-name' берётся из horoscope/urls.py отсюда
+path('<str:sign_zodiac>/', views.get_info_about_zodiac_sign, name='horoscope-name'),
+
+затем если наша функция get_info_about_zodiac_sign принимает параметры то мы их указываем
+sign_zodiac=zodiac
+
+#функция которая примет параметр
+def get_info_about_zodiac_sign(request, sign_zodiac: str):
+
+при использовании этого тэга у нас нет зависимости в роутах
+также тэг url не надо закрывать в отличии от других

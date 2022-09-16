@@ -4,5 +4,7 @@ Alt + Ctrl + L - Выравнивание кода
 
 Ctrl + R - Для переименования переменных
 
+Ctrl + Alt + J - Обернуть переменную в нужный тэг
+
 #Остальные клавиши
 http://dev-tricks.ru/2016/10/20/goryachie-klavishi-pycharm
