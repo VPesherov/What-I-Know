@@ -1,0 +1,3 @@
+SELECT * FROM employee WHERE country_of_birth IN ('China', 'Argentina'); - переделанный WHERE 
+
+SELECT ROUND(AVG(price)) FROM holiday; - округление(ROUND)
