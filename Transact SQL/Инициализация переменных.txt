@@ -1,0 +1,21 @@
+
+Для инициализации переменных 
+DECLARE @someBit bit = 0
+PRINT @someBit
+
+Для изменения значения переменной
+
+SET @someBit = 123
+PRINT @someBit
+(выведется 1 так как тип bit)
+
+DECLARE @someDec decimal = 123.56 # если не указывать размерность то округлится
+PRINT @someDec #выведется 124, округляется по правилам математики
+
+DECLARE @someDec1 decimal(18,2) = 123.3 
+PRINT @someDec1 # так как было веделено 2 знака в дробной части то и выведется 123.30
+
+Сложение:
+
+DECLARE @x int = 123, @y int = 456
+SELECT @x + @y

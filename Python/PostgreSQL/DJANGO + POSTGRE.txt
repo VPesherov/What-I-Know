@@ -1,2 +1,41 @@
 https://www.youtube.com/watch?v=unFGJhIvHU4
 
+Подключение Postgre к Django
+
+1)Создание БД в PgAdmin(или в shell) # обязательно настроить пользователя чтоб мог пользоваться этой БД
+
+2)Заходим в проект и в нужном приложении в файле models прописываем нужную модель
+
+3)Затем в файле settings.py задаём настройки БД, заменяем переменную DATABASE на
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'имя_бд',
+        'USER': 'пользователь_созданный',
+        'PASSWORD': 'пароль',
+    }
+}
+
+4)Далее нужно зарегестрировать таблицы в админке, в файле admin.py каждого приложения
+прописываем
+
+from .models import Название_класса_созданного_в_models.py
+
+admin.site.register(Название_класса_созданного_в_models.py)
+
+5)Затем в консоли проекта 
+python manage.py makemigrations 
+и в случае успеха
+python manage.py migrate
+
+6)Если ошибки то нашему пользователю в PgAdmin нужно дать право Can login
+
+7)Затем можно создать админа для просмотра и редактирования БД
+
+8)python manage.py createsuperuser
+
+9)Затем запускаем сервер и можно войти в админку проверить что БД созданы
+
+
+
