@@ -1,0 +1,13 @@
+1)Заполняем таблицу данными
+
+в консоли заходим в Shell
+python manage.py shell
+
+from movie_app_1.models import Movie
+a = Movie(name='Matrix', rating=85)
+a.save()
+
+или сделать проще
+
+Movie(name='XXX', rating=85).save() # тут не нужно сохрянять ни в какую переменную а сразу сохраниться
+

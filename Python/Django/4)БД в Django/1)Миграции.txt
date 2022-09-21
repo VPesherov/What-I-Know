@@ -1,0 +1,4 @@
+1) python manage.py makemigrations #зафиксируюися изменения
+2) python manage.py migrate #сольются в бд
+
+Миграции нужно делать каждый раз когда меняем таблицу

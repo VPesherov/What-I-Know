@@ -1,0 +1,17 @@
+Модель задаётся классом в файле models.py приложения
+
+from django.db import models
+
+# Create your models here.
+
+
+class Movie(models.Model):
+    name = models.CharField(max_length=50)#максимальная длина поле Char
+    rating = models.IntegerField() # поле инт
+    year = models.IntegerField(null=True) # поле инт которое может быть пустым
+    budget = models.IntegerField(default=1000000) # поле инт у которого значение по умолчанию будет выставлено 1000000
+
+    def __str__(self): # метод которые преобразует записи в удобный для нас вид
+        return f'{self.name} - {self.rating}%' 
+
+
