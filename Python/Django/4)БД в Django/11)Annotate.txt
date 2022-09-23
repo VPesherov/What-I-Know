@@ -1,0 +1,31 @@
+Допустим нам надо добавить дополнительное поле
+
+Для этого существует метод annotate
+
+from django.db.models import Value
+
+movies.Movie.objects.annotate(new_field_bool=Value(True))#создали новое поле new_field_bool
+и заполнили его True
+
+можно создать сколько угодных временных колонок в рамкой одной функции
+
+movies.Movie.objects.annotate(
+new_field_bool=Value(True),
+str_field=Value('stroka'),
+int_field=Value(123)
+)
+
+чтоб перенести в другую колонку какое-нибудь изменённое значение, например
+у нас есть старый бюджет и создадим временную колонку с новым бюджетом
+
+movies = Movie.objects.annotate(new_field_bool=Value(True),
+                                new_budget=F('budget') + 100)
+
+с помощью F мы обратились к столбцу 'budget' перенесли его в нашу новую и увеличили на 100
+
+# сложить 2 каких-либо строки
+movies = Movie.objects.annotate(new_field_bool=Value(True),
+                                    new_budget=F('budget') + 100,
+                                    sum_rating_year=F('rating') + F('year'))
+
+все созданные колонки не сохраняются

@@ -1,0 +1,23 @@
+Django Debug Toolbar
+
+#установка выполнять все пункты
+https://django-debug-toolbar.readthedocs.io/en/latest/installation.html
+
+разделы:
+
+history # к каким адрессам обращаемся
+
+version # версия используемых пакетов
+
+time # время запроса
+
+settings # настройка settings.py
+
+headers # для http запросов
+
+request # можно посмотреть функции представления и её аргументы
+
+sql # показывает все запрос применённые к странице
+
+
+
