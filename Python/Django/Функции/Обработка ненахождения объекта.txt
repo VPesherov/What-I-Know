@@ -1,0 +1,9 @@
+Если в django мы используем get то если мы чего-то не найдём то будет вызвана ошибка
+для замены
+Movie.objects.get(id=id_movie) можно использовать следующую функцию
+
+from django.shortcuts import get_object_or_404
+
+get_object_or_404(Movie, id=id_movie) #первым аргументом передаётся модель, вторым условие
+
+

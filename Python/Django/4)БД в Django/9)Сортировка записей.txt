@@ -1,0 +1,15 @@
+Для сортировки записей по опредёлнному поля есть следующие методы
+
+movies = Movie.objects.order_by('name') # сортировка по имени
+
+movies = Movie.objects.order_by('-name') # сортировка по имени в обратном порядке
+
+movies = Movie.objects.order_by('name', 'rating') # сортировка по нескольки полям
+
+Для сортировки полей где есть null нужно импортировать
+
+from django.db.models import F
+
+movies = Movie.objects.order_by(F('year').asc(nulls_last=True)) 
+# тут мы определяем куда мы переносим объекты null, например все null будут в конце при True
+

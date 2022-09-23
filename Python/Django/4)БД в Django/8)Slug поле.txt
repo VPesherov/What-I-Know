@@ -1,0 +1,47 @@
+Slug строки - это такие строки которые в url понятны человеку
+для этого в модели нужно добавить дополнительное поле
+
+# они дожны быть уникальны в том плане что у нас не должно условно сгенерироваться
+два одинаковых slug 
+
+from django.utils.text import slugify
+
+class Movie(models.Model):
+    name = models.CharField(max_length=50)
+    rating = models.IntegerField()
+    year = models.IntegerField(null=True)
+    budget = models.IntegerField(default=1000000)
+    slug = models.SlugField(default='', null=False) # лучше сделать для него значение по умолчанию во избежания
+ошибок и null = False
+
+# создадим метод для генерации наших slug
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.name)
+        super(Movie, self).save(*args, **kwargs)
+
+# изменим наш метод из прошлых записей чтоб использовалось slug поле
+    def get_url(self):
+        return reverse('movie-detail', args=[self.slug])
+
+
+
+и для автоматизации чтоб самим не вводить slug в нашем view где есть метод который собирает
+все фильмы создадим генерацию slug 
+
+
+def show_all_movie(request):
+    movies = Movie.objects.all()
+	
+# генерация slug
+    for movie in movies:
+        movie.save()
+
+    context = {
+        'movies': movies
+    }
+    return render(request, 'movie_app_1/all_movies.html', context=context)
+
+и изменим url чтоб как атрибут использовался slug_movie
+
+path('movie/<slug:slug_movie>', views.show_one_movie, name='movie-detail'),
+

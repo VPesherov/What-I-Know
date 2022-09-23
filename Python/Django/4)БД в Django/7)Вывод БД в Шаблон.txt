@@ -23,3 +23,28 @@ def show_all_movie(request):
 
 Метод в модели
 
+Для работы с динамическими url можно использовать следующую схему
+1)В модели создать функцию get_url
+
+
+class Movie(models.Model):
+    name = models.CharField(max_length=50)
+    rating = models.IntegerField()
+    year = models.IntegerField(null=True)
+    budget = models.IntegerField(default=1000000)
+
+    def __str__(self):
+        return f'{self.name} - {self.rating}% - {self.budget} - {self.year}'
+
+    def get_url(self):#сгенерирует url
+        return reverse('movie-detail', args=[self.id])
+
+и тогда в html можно будет у записи вызвать метод movie.get_url
+
+{% for movie in movies %}
+	<li><a href="{{ movie.get_url }}">{{movie.name}}</a></li> #url будет генироваться автоматически
+# для каждого фильма
+{% endfor %}
+
+
+
