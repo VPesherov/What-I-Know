@@ -1,0 +1,20 @@
+Для реализации союзов or и and в джанго нужно импортировать объект Q
+
+from django.db.models import Q
+
+при помощи него можно добавить условие в фильтрацию
+
+теперь можно добавить союз or
+
+Movie.objects.filter(Q(year__isnull=True) | Q(rating=80))
+
+Здесь или обозначается - | также и для and - &
+
+Movie.objects.filter(Q(year__isnull=True) & Q(rating=80))
+
+также теперь можно использовать not
+
+Movie.objects.filter(Q(year__insull=True) & ~Q(rating=80))
+
+Знак ~ заменяет отрицание
+

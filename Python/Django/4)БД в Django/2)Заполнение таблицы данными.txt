@@ -11,3 +11,7 @@ a.save()
 
 Movie(name='XXX', rating=85).save() # тут не нужно сохрянять ни в какую переменную а сразу сохраниться
 
+и ещё проще
+
+Movie.objects.create(name="Avatar 2", rating = 83)
+

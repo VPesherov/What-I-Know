@@ -1,0 +1,25 @@
+
+Для показа на странице делаем следующее во view собираем наши данные из БД и не забудем импортировать
+нашу модель
+
+from .models import Movie
+# Create your views here.
+
+
+def show_all_movie(request):
+    movies = Movie.objects.all() #берём все элементы
+    context = {
+        'movies' : movies
+    }
+    return render(request, 'movie_app_1/all_movies.html', context=context) # и передаём их
+
+и таким образом на html уже можно работать с movies
+
+<ul>
+    {% for movie in movies %}
+    <li>{{movie.name}}</li>
+    {% endfor %}
+</ul>
+
+Метод в модели
+

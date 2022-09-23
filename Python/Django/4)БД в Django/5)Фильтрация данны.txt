@@ -1,0 +1,68 @@
+Фильтр или Where
+
+Для нахождение нужной записи по условию
+Movie.objects.get(id=5)
+но если результат не найден или несколько результатов будет ошибка то есть записей 
+не должно быть 0 или 1>
+
+Для нескольких результатов
+Movie.objects.filter(budget=1000000)
+и также к этим записям можно обращаться по идентификатору
+
+Movie.objects.filter(budget=1000000)[0] - первая запись из того что вернул фильтер
+
+Знак больше прописывается
+
+Movie.objects.filter(budget__gt=10000) - то есть __gt заменяет >
+
+меньше __lt=
+
+больше или равно __gte=
+
+меньше или равно __lte=
+
+Не равно - Movie.objects.exclude(budget=1000000) - exclude даёт не равно
+
+Проверка на Null Movie.objects.filter(year__isnull=True) - True значит да только пустые
+
+Также можно объединять фильтры
+Movie.objects.filter(year__isnull=True, name='Avatar') # объединятся они через условие AND
+
+также это можно провернуть и с не равно
+
+Movie.objects.exclude(year__isnull=False).filter(name='Avatar')
+
+также можно использовать фильтр для проверки содержится ли что-то в строке
+
+Movie.objects.filter(name__contains='Avatar')
+
+И тогда на выходе будет Avatar и Avatar 2, но эта функции в некоторых версиях чувствительно к регистру
+для нечувствительных к регистру есть функция
+
+Movie.objects.filter(name__icontains='Avatar')
+
+Также чтоб проверить начинается ли с какого-то символа или заканчивается на какие-то символы
+
+Movie.objects.filter(name__startswith='a')
+Movie.objects.filter(name__endswith='go')
+
+Также есть аналог in
+
+Movie.objects.filter(id__in=[3,5,6])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
