@@ -1,0 +1,23 @@
+Например нам нужун столбец с оценкой фильма зависящего от рейтинга
+создадим временный столбец для бд, но мы хотим это сделать в админке
+
+@admin.register(Movie)
+class MovieAdmin(admin.ModelAdmin):
+    list_display = ['name', 'rating', 'year', 'budget', 'rating_status'] # добавили название функции
+# в вывод
+    list_editable = ['rating', 'year', 'budget']
+    ordering = ['rating', 'name']
+    list_per_page = 3
+
+
+    @admin.display(description='Статус') # установить название колонки
+    def rating_status(self, movie):#создали функцию которая возвращает значение в зависимости
+# от рейтинга
+        if movie.rating < 50:
+            return 'Зачем это смотреть?'
+        elif movie.rating < 75:
+            return 'Разок можно глянуть'
+        elif movie.rating >= 75:
+            return 'Хорошечно'
+
+

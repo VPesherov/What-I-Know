@@ -1,0 +1,14 @@
+1)Для начала нужно создать пользователя
+
+python manage.py createsuperuser
+указываем имя
+емаил
+пароль
+
+2)Регестрируем нашу модель в файле admin.py в нужном приложении
+
+from .models import Movie
+
+admin.site.register(Movie)
+
+3)И там можно добавлять записи изменять или удалять
