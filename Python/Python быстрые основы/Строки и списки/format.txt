@@ -1,0 +1,12 @@
+в format можно передовать переменные
+
+# Пример
+name = 'Семён'
+mid_name = 'Семёнов'
+balance = 32.56
+
+text = """Дорогой {name} {mid_name}, 
+баланс Вашего лицевого счёта составляет {balance} 
+руб.""".format(mid_name=mid_name, name=name, balance=balance)
+
+print(text)
