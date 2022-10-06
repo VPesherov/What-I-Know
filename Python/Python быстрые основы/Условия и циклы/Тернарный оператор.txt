@@ -1,0 +1,16 @@
+Тернарный оператор это сокращенный if
+
+true_value if condition else false_value
+
+Пример
+
+age = int(input('Введите возраст посетителя: '))
+
+if age >= 18:
+    price_ticket = 20
+else:
+    price_ticket = 8
+
+Можно простой if переделать в
+
+price_ticket = 20 if age >= 18 else 8 # Отработает точно также

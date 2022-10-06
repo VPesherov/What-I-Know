@@ -1,0 +1,5 @@
+Моржовый оператор позволяет сразу присвоить и вывести
+
+print(see_walrus := 'Look at my walrus, my walrus is amazing') # Look at my walrus, my walrus is amazing
+
+print(see_walrus[:11] + 'horse') # Loot at my horse
