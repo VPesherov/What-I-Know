@@ -1,0 +1,13 @@
+a = {1, 'hi', 2, 1, False, 6, 'the', True}
+
+for item in a:
+    print(item)
+
+# Вывод
+False
+1
+2
+6
+hi
+the
+#
