@@ -1,0 +1,12 @@
+Обычный способ
+
+a = (1, 'hi', 3, 54, False, 6, 'the', True)
+for item in a:
+    print(item)
+
+С индексами
+
+a = (1, 'hi', 3, 54, False, 6, 'the', True)
+
+for item in range(len(a)):
+    print(f'Индекс={item}, значение={a[item]}') 

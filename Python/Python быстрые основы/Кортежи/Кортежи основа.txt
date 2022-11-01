@@ -1,0 +1,50 @@
+Кортеж (tuple) – неизменяемая упорядоченная последовательность
+, обычно используемая для хранения разнотипных объектов.  
+Кортеж очень напоминает список, но только кортеж является неизменяемым типом данных.
+
+
+Записывать можно кортежи следующим образом, например
+a = (1, 2, 3, 4, 5)
+print(a, type(a)) # (1, 2, 3, 4, 5)
+
+b = ('hello', 45, True)
+print(type(b)) # <class 'tuple'>
+print(b) # ('hello', 45, True)
+
+или так
+
+a = 1, 2, 3, 4, 5
+print(a, type(a)) # (1, 2, 3, 4, 5)
+
+b = 'hello', 45, True
+print(type(b)) # <class 'tuple'>
+print(b) # ('hello', 45, True)
+
+При помощи функции tuple(). Ей надо передать итерируемый объект: например range(), список или строку
+
+a = tuple(range(5))
+print(a, type(a)) 
+
+b = tuple('hello')
+print(b, type(b))
+
+
+my_list = [43, True, 'The Boys']
+c = tuple(my_list)
+print(c, type(b))
+
+# Вывод
+
+(0, 1, 2, 3, 4) <class 'tuple'>
+('h', 'e', 'l', 'l', 'o') <class 'tuple'>
+(43, True, 'The Boys') <class 'tuple'>
+
+Пустые кортежи
+
+a = ()
+print(a, type(a))
+
+b = tuple()
+print(b, type(b))
+
+к ним применяются почти все методы что и к списками sum, max, min, in, len
