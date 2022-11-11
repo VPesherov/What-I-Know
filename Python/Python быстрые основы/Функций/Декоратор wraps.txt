@@ -1,0 +1,43 @@
+После работы с декоратором, декорируемая функция теряет своим параметры, например параметры
+__name__ и __doc__ будут утеряны и заменены возвращаемой функцией
+
+то есть при обращений
+
+say.__name__ # мы получим inner
+
+для этого было придумано решение, чтоб не терять всё это wraps
+
+from functools import wraps
+
+def table(func):
+
+    @wraps(func)
+    def inner(*args, **kwargs):
+        print('<table>')
+        func(*args, **kwargs)
+        print('</table>')
+    return inner
+
+def sqr(x):
+    '''
+    Функция возводит в квадрат
+    :param x:
+    :return:
+    '''
+    print(x**2)
+
+sqr = table(sqr)
+print(sqr)
+print(sqr.__name__)
+help(sqr)
+
+# Вывод
+<function sqr at 0x7fcfeb361000>
+sqr
+Help on function sqr in module __main__:
+
+sqr(x)
+    Функция возводит в квадрат
+    :param x:
+    :return:
+#

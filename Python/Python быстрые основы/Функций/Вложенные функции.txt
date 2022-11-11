@@ -1,0 +1,57 @@
+В python существует возможность определять функции внутри других функций 
+или, другими словами, создавать вложенные функции. 
+Вот пример такой реализации вложенных функций:
+
+def colors() -> None:
+    def print_red() -> None:
+        print('red')
+
+    def print_blue() -> None:
+        print('blue')
+
+    print_red()
+    print_blue()
+
+
+colors()
+
+# Вывод
+red
+blue
+#
+
+Стоит сразу отметить, что функции print_red и print_blue находятся внутри функции colors. 
+Это означает, что они будут находиться внутри локальной области функции colors 
+и вне пределах области видимости функции colors эти функции вызвать нельзя, произойдет ошибку
+
+def colors():
+
+    def print_red():
+      print('red')
+
+print_red() # ошибка 
+
+
+Внутри функций можно так же создавать переменные. Посмотрим как они ведут себя.
+
+def colors() -> None:
+
+    def print_red() -> None:
+        r = 'red'
+        print(r)
+
+    def print_blue() -> None:
+        b = 'blue'
+        print(b)
+
+    print_red()
+    print_blue()
+
+colors()
+
+# Вывод
+red
+blue
+#
+
+

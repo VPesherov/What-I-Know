@@ -1,0 +1,122 @@
+Рассмотрим ещё несколько примеров с замыканием для закрепления полученных знаний. 
+Создадим функцию, которая будет вносить число в список и подсчитывать 
+среднее арифметическое этого списка.
+
+def average_numbers():
+    numbers = []
+    def inner(number):
+        numbers.append(number)
+        print(numbers)
+        return sum(numbers) / len(numbers)
+
+    return inner
+
+r1 = average_numbers()
+r2 = average_numbers()
+print(r1(5))
+print(r1(10))
+print(r2(15))
+
+# Вывод
+[5]
+5.0
+[5, 10]
+7.5
+[15]
+15.0
+#
+
+Как мы видим, r1 и r2 имеют разные области видимости с разными списками.
+Также можно вместо списка использовать две свободные переменные:
+
+def average_numbers():
+    summa = 0
+    count = 0
+    def inner(number):
+        summa += number
+        count += 1
+        return summa / count
+
+    return inner
+    r1 = average_numbers()
+print(r1(5)) # Ошибка
+
+Но в таком случае pycharm сразу жалуется на переменны count и summa, поскольку мы хотим их изменять. 
+Поэтому надо сделать полную запись сложения и объявить эти переменные при помощи nonlocal.
+
+def average_numbers():
+    summa = 0
+    count = 0
+    def inner(number):
+        nonlocal summa
+        nonlocal count
+        summa = summa + number
+        count = count + 1
+        return summa / count
+
+    return inner
+
+r1 = average_numbers()
+r2 = average_numbers()
+print(r1(5))
+print(r1(10))
+print(r2(15))
+
+# Вывод
+5.0
+7.5
+15.0
+#
+
+Следующий пример: напишем функцию timer, которая засекает сколько времени прошло 
+с момента первого вызова функции. Это сделаем при помощи модуля datetime, 
+в котором есть функция datetime.now(), которая отображает время во время вызова.
+Пример того, что мы получим при вызове этой функции:
+
+from datetime import datetime
+
+print(datetime.now()) # 2022-11-09 02:14:25.117870
+
+Теперь перейдем к написанию функции:
+
+from datetime import datetime
+def timer():
+    start = datetime.now()
+    def inner():
+        return datetime.now() - start
+    return inner
+
+r1 = timer()
+print(r1()) # 0:00:00.000004
+print(r1()) # 0:00:00.000677
+
+Рассмотрим пример, где в качестве передаваемого для замыкания параметра будет функция:
+
+def add(a, b):
+    return a + b
+
+def counter(func):
+    count = 0
+    def inner(*args, **kwargs):
+        nonlocal count
+        count += 1
+        print(f'функция {func.__name__} вызывалась {count} раз')
+        return func(*args,**kwargs)
+
+    return inner
+q = counter(add)
+
+q(10, 20)
+q(2,5)
+
+# Вывод
+функция add вызывалась 1 раз
+функция add вызывалась 2 раз
+#
+
+Это получилось следующим образом: мы вызвали counter и передали название 
+нашей функции (в нашем случае - функцию add), далее в переменной 
+q сохранится наше замыкание (функция inner), и когда мы передаем это функции 
+значения (в нашем случае это 10 и 20, 2 и 5), они запомнятся в параметре *args, 
+мы увеличиваем счётчик, говорим какая именно наша функция вызывалась и сколько раз, 
+а далее идёт вызов самой функции.
