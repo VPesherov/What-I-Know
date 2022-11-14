@@ -1,0 +1,10 @@
+str_json = 'json формат'
+
+data = json.loads(str_json)
+
+# подробный видос по обработке и созданию json
+https://www.youtube.com/watch?v=rIhygmw9HZM&t=4s&ab_channel=egoroff_channel
+
+
+
+
