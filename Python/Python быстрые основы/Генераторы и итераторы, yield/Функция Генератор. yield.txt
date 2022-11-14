@@ -1,0 +1,76 @@
+
+def f():
+	return [43, 65, 32]
+
+def genf():
+	for i in [43, 65, 32]:
+		yield i
+
+print(f()) # [43, 65, 32]
+print(f()) # [43, 65, 32]
+
+s = genf()
+print(next(s)) # 43
+print(next(s)) # 65
+print(next(s)) # 32
+print(next(s)) # ошибка
+
+функция yeild - замараживает все ваши переменные на последнем месте использования
+и при следующем использовании уже функия будет стартовать именно с переменной yeild
+
+Пример
+
+def genf():
+	s = 7
+	for i in [43, 65, 32]:
+		yeild i
+		print(s)
+		s = s * 10 + 7
+
+g = genf()
+print(next(g)) 
+# 43
+print(next(g))
+# 7
+# 65
+print(next(g))
+# 77
+# 32
+
+
+Ещё пример
+
+def fact(n):
+    pr = 1
+    for i in range(1, n + 1):
+        pr = pr * i
+        yield pr
+
+
+s = fact(10)
+print(next(s)) # 1
+print(next(s)) # 2
+print(next(s)) # 6
+print(next(s)) # 24
+print(next(s)) # 120
+
+По итогу выводим по одному элементу факториала в плоть до 10
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
