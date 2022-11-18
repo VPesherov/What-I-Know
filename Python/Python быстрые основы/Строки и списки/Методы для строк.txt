@@ -72,5 +72,28 @@ print(q.strip()) # удаление пробелов слева и справа
 print(q.lstrip()) # удаление пробела только слева
 print(q.rstrip()) # удаляет пробелы справа
 
+Метод rpartition
 
+Метод .rpartition  имеет следующий шаблон вызова:
 
+S.rpartition(sep)
+
+Метод  .rpartition разбивает строку по последнему встреченному разделителю sep и возвращает кортеж, 
+который состоит из трех элементов: строки до разделителя, самого разделителя и 
+строки после разделителя. Если разделитель в строке отсутствует, то кортеж будет состоять из: 
+двух пустых строк и исходной строки:
+
+text = "Python is best"
+
+print(text.rpartition('is '))
+print(text.rpartition('not '))
+
+s = "Python is best, isn't it"
+
+print(s.rpartition('is'))
+
+# Вывод
+('Python ', 'is ', 'best')
+('', '', 'Python is best')
+('Python is best, ', 'is', "n't it")
+#

@@ -1,0 +1,49 @@
+У нас есть словарь
+
+d = {}
+d['a'] # будет ошибка так как нет ключа 'a'
+
+И если мы хотим чтоб даже при пустом значение, просто при обращении ключ создавался, то нужно 
+обратиться к defaultdict
+
+r = defaultdict(int, {})
+и тогда при обращении к r['s'] мы получим уже 0, и элемент создасться так как у int значение
+по умолчанию равно 0
+
+from collections import defaultdict
+
+r = defaultdict(int, {})
+print(r) # defaultdict(<class 'int'>, {})
+r['z']
+print(r) # defaultdict(<class 'int'>, {'z': 0})
+ 
+или например нам нужно создать пустой список
+
+from collections import defaultdict
+
+
+r = defaultdict(list, {})
+print(r) # defaultdict(<class 'list'>, {})
+r['z']
+print(r) # defaultdict(<class 'list'>, {'z': []})
+
+А если мы хотим задать значение по умолчанию своё например хотим чтоб всем новым присваивался
+список [1, 2, 3] то его нужно вернуть через анонимную функцию через метод default_factory
+
+from collections import defaultdict
+
+
+r = defaultdict(list, {})
+print(r)
+r['z']
+print(r)
+
+r.default_factory = lambda: [1, 2, 3]
+r['k']
+print(r)
+
+# Вывод
+defaultdict(<class 'list'>, {})
+defaultdict(<class 'list'>, {'z': []})
+defaultdict(<function <lambda> at 0x0000027B50F33E20>, {'z': [], 'k': [1, 2, 3]})
+#

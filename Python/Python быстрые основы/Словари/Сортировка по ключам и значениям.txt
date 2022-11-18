@@ -1,0 +1,52 @@
+Отсортировать по ключам можно достаточно просто
+Пример
+
+heroes = {
+    'Spider-Man': 80,
+    'Batman': 65,
+    'Superman': 85,
+    'Wonder Woman': 70,
+    'Flash': 70,
+    'Iron Man': 65,
+    'Thor': 90,
+    'Aquaman': 65,
+    'Captain America': 65,
+    'Hulk': 87
+}
+
+for i in sorted(heroes): # по умолчанию словарь обходится по ключам, они же и сортируются
+    print(i, heroes[i])
+
+но если мы хотим отсортировать по значению возникает проблема 
+
+for i in sorted(heroes.values()):
+    print(i)
+
+мы если сортируем конкретно values то из values ключ мы получить напрямую не можем
+тогда можно сделать следующее
+
+for i in sorted(heroes.items(), key=lambda para: para[1]): 
+# в параметр key мы передаём анонимную функцию, которая сортирует второй параметр возвращаемого кортежа
+    print(i)
+
+# Вывод
+('Batman', 65)
+('Iron Man', 65)
+('Aquaman', 65)
+('Captain America', 65)
+('Wonder Woman', 70)
+('Flash', 70)
+('Spider-Man', 80)
+('Superman', 85)
+('Hulk', 87)
+('Thor', 90)
+#
+
+Но если мы хотим в начале сортировать по значению, а при равенстве по ключу, то делаем так
+
+for i in sorted(heroes.items(), key=lambda para: (para[1], para[0])):
+# в анонимную функцию передасться 2 параметра
+	print(i)
+
+
+

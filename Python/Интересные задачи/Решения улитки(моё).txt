@@ -1,0 +1,80 @@
+Требуется вывести квадрат, состоящий из N×N клеток, 
+заполненных числами от 1 до N2 по спирали (см. примеры).
+
+1 2 3
+8 9 4
+7 6 5
+
+n = int(input())
+result = [[0] * n for i in range(n)]
+temp = [n]
+i = n
+while i != 1:
+    i -= 1
+    temp.append(i)
+    temp.append(i)
+
+direction_right = True
+direction_left = False
+direction_top = False
+direction_bot = False
+
+k = 0
+column_today = 0
+row_today = 0
+
+for i in temp:
+
+    if direction_right is True:
+        column_now = column_today
+        for j in range(i):
+            k += 1
+            result[row_today][column_now] = k
+            column_now += 1
+        column_today = column_now - 1
+        row_today = row_today + 1
+
+    if direction_bot is True:
+        row_now = row_today
+        for i1 in range(i):
+            k += 1
+            result[row_now][column_today] = k
+            row_now += 1
+        row_today = row_now - 1
+        column_today -= 1
+
+    if direction_left is True:
+        column_now = column_today
+        for i1 in range(i):
+            k += 1
+            result[row_today][column_now] = k
+            column_now -= 1
+        column_today = column_now + 1
+        row_today -= 1
+
+    if direction_top is True:
+        row_now = row_today
+        for i1 in range(i):
+            k += 1
+            result[row_now][column_today] = k
+            row_now -= 1
+        row_today = row_now + 1
+        column_today += 1
+
+    if direction_right is True:
+        direction_right = False
+        direction_bot = True
+    elif direction_bot is True:
+        direction_left = True
+        direction_bot = False
+    elif direction_left is True:
+        direction_left = False
+        direction_top = True
+    elif direction_top is True:
+        direction_top = False
+        direction_right = True
+
+for i in range(n):
+    for j in range(n):
+        print(result[i][j], end=" ")
+    print()

@@ -1,0 +1,47 @@
+Данные функции нужны, если мы хотим проверить несколько объектов на их заполненость
+
+Функия all проверяет наполность всех элементов переданной ей коллекции, если хоть один будет null
+то вывелет False
+
+a = ['hello', 'my', 'world']
+print(all(a)) # True
+
+a = ['hello', '', 'world']
+print(all(a)) # False # тк второй элемент пустая строка
+
+Функция any проверяет наполненость всех элементов переданной ей коллекции, если хоть один будет
+null то всё равно будет True, только если все будут пустые будет False
+
+a = ['hello', '', 'world']
+print(any(a)) # True
+
+a = ['', '', '']
+print(any(a)) # False
+
+
+С помощью этих функций удобно проверять несколько условия сразу
+Например
+
+
+a = 100
+condition_1 = a % 2 == 0
+condition_2 = a > 50
+condition_3 = a < 1000
+
+print(all([condition_1, condition_2, condition_3])) # True
+print(any((condition_1, condition_2, condition_3))) # True
+
+Обязательно нужно передавать именно коллекцию
+
+изменим a на 99
+
+
+a = 99
+condition_1 = a % 2 == 0 # Это значение будет ложно
+condition_2 = a > 50
+condition_3 = a < 1000
+
+print(all([condition_1, condition_2, condition_3])) # False
+print(any((condition_1, condition_2, condition_3))) # True
+
+
