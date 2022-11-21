@@ -1,0 +1,62 @@
+Внутри класса можно объявлять не только переменные, но и функции
+
+class Car:
+    model = "BMW"
+    engine = 1.6
+
+    def drive(): # по умолчанию тут должен быть параметр self, но уберём его
+        print("Let's go")
+
+
+теперь в методе Car проверим что нам доступно
+
+Car.__dict__
+
+# Вывод
+mappingproxy({'__module__': '__main__',
+              'model': 'BMW',
+              'engine': 1.6,
+              'drive': <function __main__.Car.drive()>, # вот наша функция
+              '__dict__': <attribute '__dict__' of 'Car' objects>,
+              '__weakref__': <attribute '__weakref__' of 'Car' objects>,
+              '__doc__': None,
+              '__annotations__': {}})
+#
+
+И вызовем нашу функцию
+
+Car.drive()
+
+# Let's go
+
+Также можно вызвать всё это с помощью getattr(Объект, 'функция')()
+
+getattr(Car, drive()) # Let's go
+
+Если мы создадим экземпляр нашего класса и попробую вызвать данную функцию
+
+a = Car()
+a.drive() # будет ошибка
+
+Ошибка так как по умолчанию должен быть всё же self чтоб экземпляр мог к ней обращаться
+Чтоб избежать данной ошибки нужно использовать декоратор @staticmethod перед функцией и теперь
+
+переопределив метод
+
+
+class Car:
+    model = "BMW"
+    engine = 1.6
+
+    @staticmethod
+    def drive():
+        print("Let's go")
+
+
+a = Car()
+a.drive() # Let's go
+
+
+
+
+

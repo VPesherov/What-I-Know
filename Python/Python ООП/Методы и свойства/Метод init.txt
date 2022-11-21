@@ -1,0 +1,64 @@
+До этого мы инициализировали переменные так
+
+class Cat:
+    breed = 'pers'
+    
+    def set_value(self, value, age=0):
+        self.name = value
+        self.age = age
+
+bob = Cat()
+bob.set_value('Bob')
+
+И это не очень удобно, для этого в питоне существуют специальные магические методы
+магические методы - это методы которые начинаются на два подчёркивания и заканчиваются на них
+например __init__ и вторая особенность магических методов, он всегда срабатывают в определённый момент
+не обязательно его вызывать
+
+Пример
+
+class Cat:
+    breed = 'pers'
+
+    def __init__(self):
+        print('hello')
+
+    def set_value(self, value, age=0):
+        self.name = value
+        self.age = age
+
+Метод init будет каждый раз срабатывать при создании объекта
+Пример
+
+Cat()
+# hello
+# <__main__.Cat at 0x1dccb72e0b0>
+
+tom = Cat()
+# hello
+
+По итогу можно сразу инициализировать наших кошек
+
+
+class Cat:
+    breed = 'pers'
+
+    def __init__(self, name, breed='pers', age=1, color='white'):
+        self.name = name
+        self.breed = breed
+        self.age = age
+        self.color = color
+        print(f'new object is {self}')
+
+    def set_value(self, value, age):
+        self.name = value
+        self.age = age
+
+walt = Cat('Walt')
+walt.__dict__
+# {'name': 'walt', 'breed': 'pers', 'age': 1, 'color': 'white'}
+
+
+
+
+

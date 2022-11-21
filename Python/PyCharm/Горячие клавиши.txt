@@ -6,5 +6,7 @@ Ctrl + R - Для переименования переменных
 
 Ctrl + Alt + J - Обернуть переменную в нужный тэг
 
+shift + tab - Убрать лишние табы
+
 #Остальные клавиши
 http://dev-tricks.ru/2016/10/20/goryachie-klavishi-pycharm
