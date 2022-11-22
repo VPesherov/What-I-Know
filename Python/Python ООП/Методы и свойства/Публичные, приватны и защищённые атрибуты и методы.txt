@@ -1,0 +1,63 @@
+В питоне для создания protected атрибута нужно перед атрибутом указать одно нижнее подчёркивание
+
+class BankAccount:
+
+    def __init__(self, name, balance, passport):
+        self._name = name
+        self._balance = balance
+        self._passport = passport
+
+    def print_protected_data(self):
+        print(f"{self._name} - {self._balance} : {self._passport}")
+
+
+account1 = BankAccount('Bob', 100000, 543534355)
+account1.print_data() # Bob - 100000 : 543534355
+print(account1._name) # Bob
+
+Доступ к полям до сей пор есть, но для чего тогда нужен protected?
+По соглашению разработчиков python, protected обозночает для другого программиста то, что данные
+атрибут лучше не использовать вне класса и он предназначен только для нужд внутри класса
+
+Но как же нам ограничить доступ к данным переменным? Используем private атрибут
+Для этого перед атрибутом нужно добавить ещё одно подчёркивание
+
+И тогда
+
+class BankAccount:
+
+    def __init__(self, name, balance, passport):
+        self.__name = name
+        self.__balance = balance
+        self.__passport = passport
+
+    def print_private_data(self):
+        print(f"{self.__name} - {self.__balance} : {self.__passport}")
+
+
+account1 = BankAccount('Bob', 100000, 543534355)
+account1.print_private_data() # Bob - 100000 : 543534355
+print(account1.__name) # выдаст ошибку так как доступ к переменной есть только внутри класса
+
+При помощи метода print_private_data происходит сокрытые метода защищённых атрибутов или инкапсуляция
+и пользователь может получить некий доступ к нашем атрибутам, но помимо атрибутов можно защитить и методы
+
+class BankAccount:
+
+    def __init__(self, name, balance, passport):
+        self.__name = name
+        self.__balance = balance
+        self.__passport = passport
+
+    def __print_private_data(self): # сделали его защищённым
+        print(f"{self.__name} - {self.__balance} : {self.__passport}")
+
+
+account1 = BankAccount('Bob', 100000, 543534355)
+account1.__print_private_data() # ошибка
+print(account1.__name)
+
+Но есть лазейка как всё же получить доступ например к методу
+account1._BankAccount__print_private_data() # Bob - 100000 : 543534355
+
+

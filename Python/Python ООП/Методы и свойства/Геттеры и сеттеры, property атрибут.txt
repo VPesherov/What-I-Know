@@ -1,0 +1,74 @@
+Допустим у нас есть следующий класс
+
+
+class BankAccount:
+
+    def __init__(self, name, balance):
+        self.name = name
+        self.balance = balance
+
+a = BankAccount('Ivan', 100)
+a.balance # 100
+a.balance = 'hello' # теперь в балансе будет строка, что неправильно
+
+И теперь нам нужно ограничить доступ к переменной balance
+        self.__balance = balance
+
+и создадим некий интерфейс который будет работать с этой переменной это и будут getter и setter
+
+class BankAccount:
+
+    def __init__(self, name, balance):
+        self.name = name
+        self.__balance = balance
+
+    def get_balance(self):
+        return self.__balance
+
+    def set_balance(self, value):
+        if not isinstance(value, (int, float)):
+            raise ValueError('Баланс должен быть числом')
+        else:
+            self.__balance = value
+
+В итоге с помощью двух методов get_balance и set_balance можно смотреть баланс и изменить его
+Но это достаточно неудобный способ, нужно его изменить чтоб было более просто и понятно
+
+class BankAccount:
+
+    def __init__(self, name, balance):
+        self.name = name
+        self.__balance = balance
+
+    def get_balance(self):
+        return self.__balance
+
+    def set_balance(self, value):
+        if not isinstance(value, (int, float)):
+            raise ValueError('Баланс должен быть числом')
+        else:
+            self.__balance = value
+
+    balance = property(fget=get_balance, fset=set_balance, fdel=) # добавим property и теперь
+
+У нас будет более упрощённый вызов геттера и сеттера, как мы привыкли
+g1 = BankAccount('Bobi', 1000)
+g1.balance # 1000
+g1.balance = 10000
+g1.balabce # 10000
+
+Сработают именно геттеры и сеттеры, а не просто переопределяться атрибуты
+Это можно проверить занеся строку в g1.balance
+g1.balance = 'hello'
+# Ошибка
+
+Можно также указать и аргумент который будет удалять атрибут если нужно
+
+def delete_balance(self):
+    del self.__balance
+
+balance = property(fget=get_balance, fset=set_balance, fdel=delete_balance)
+
+
+
+

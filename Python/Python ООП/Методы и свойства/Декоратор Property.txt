@@ -1,0 +1,29 @@
+Декоратор property возвращает объект типа property и мы можем его переопределить
+
+class BankAccount:
+
+    def __init__(self, name, balance):
+        self.name = name
+        self.__balance = balance
+
+    @property # тут мы указываем какую функцию продекорировать
+    def my_balance(self):
+        return self.__balance
+
+    @my_balance.setter # затем мы это всё расширяем но так как названия одинаковы нужно использовать имя
+			# предыдущего
+    def my_balance(self, value):
+        if not isinstance(value, (int, float)):
+            raise ValueError('Баланс должен быть числом')
+        self.__balance = value
+
+и теперь можно спокойно обращаться
+p = BankAccount('Tod', 800)
+p.my_balance = 100
+p.my_balance # 100
+p.my_balance = 200
+p.my_balance # 200
+
+
+
+
