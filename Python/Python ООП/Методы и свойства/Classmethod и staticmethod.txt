@@ -1,0 +1,94 @@
+Сталкиваемся со следующей проблемой
+Создадим простой класс
+
+class Example:
+    def hello():
+        print('hello')
+
+и вызовем нашу функцию
+
+Example.hello() # hello
+
+Но если мы создадим экземпляр класса и вызовем у него эту функцию то будет ошибка
+p = Example()
+p.hello() # ошибка
+
+Ошибка связана с тем что экземпляр автоматически передаёт один параметр в наш метод, но у нас 0
+параметров принимает функция
+Казалось бы решить просто, просто добавим self и готово
+Создадим вторую функцию уже вместе с self
+
+class Example:
+    def hello():
+        print('hello')
+
+    def hello_2(self):
+        print('hello 2')
+
+p = Example()
+p.hello_2() # hello 2
+
+Всё отлично работает, но теперь если мы попробуем сделать следующее
+
+Example.hello_2() # ошибка
+
+то темерь тут будет ошибка что мы не перелаём никаких аргументов
+Что же делать? Оставлять две функции неправильно с точки зрения DRY(don't repeat yourself)
+
+Для этого нужно создать staticmethod
+то есть обернуть функцию в этот декоратор
+Создадим такой метод
+
+
+class Example:
+    def hello():
+        print('hello')
+
+    def hello_2(self):
+        print('hello 2')
+
+    @staticmethod # наш декоратор
+    def static_hello():
+        print('hello')
+
+и теперь
+Example.static_hello() # hello
+p1 = Example()
+p1.static_hello() # hello
+
+Ошибок нет
+
+Познакомимся со вторым декоратором - @classmethod
+
+
+class Example:
+    def hello():
+        print('hello')
+
+    def hello_2(self):
+        print('hello 2')
+
+    @staticmethod
+    def static_hello():
+        print('hello')
+        
+    @classmethod
+    def class_method(cls):
+        print(f'hello {cls}')
+
+Посмотрим что теперь будет
+
+p2 = Example()
+
+p2.class_method()
+# hello <class '__main__.Example'>
+
+Example.class_method()
+# hello <class '__main__.Example'>
+
+То есть класс метод передаёт только класс, и если мы передадим ему экземпляр то он определит
+какому классу принадлежит данный экземпляр и уже будет работать с ним
+То есть этот метод нужен когда мы хотим работать не с экземпляром а с целым классом
+
+
+
