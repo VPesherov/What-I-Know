@@ -1,0 +1,114 @@
+Допустим есть следующая проблема
+Есть класс BankAccount
+
+class BankAccount:
+    def __init__(self, name, balance):
+        self.name = name
+        self.balance = balance
+
+и давайте создадим экземпляр класса
+
+b = BankAccount('Ivan', 1000)
+
+и мы захотим прибавить к балансу b что-нибудт
+
+b.balance + 400 # 1400
+но если мы сделаем так
+b + 400 # будет ошибка
+
+Давайте попробуем реализовать такое поведение с помощью магического метода __add__
+
+class BankAccount:
+    def __init__(self, name, balance):
+        self.name = name
+        self.balance = balance
+
+    def __add__(self, other): # принимает два обязательный параметра сам экземпляр 
+			      # и с чем бы хотели сложить
+        if isinstance(other, (int, float)): # проверяем является ли other числом
+            return self.balance + other # и возвращаем сумму баланса
+
+Готово! теперь
+c = BankAccount('Andrey', 200)
+c + 200 # 400
+
+Но теперь мы получим следующую проблему
+
+200 + c # Ошибка
+
+Поменяв местами Python пытается у 200 вызвать метод add но у чисел нет такого метода
+и получается ошибка
+
+Исправляется она следующим образом нужно реализовать метод __radd__
+это тот же самый метод __add__ только он подразумевает что объект будет стоять слева
+давайте попробуем
+
+
+class BankAccount:
+    def __init__(self, name, balance):
+        self.name = name
+        self.balance = balance
+
+    def __add__(self, other):
+        if isinstance(other, (int, float)):
+            return self.balance + other
+
+    def __radd__(self, other): # просто добавляем эту строчку
+        return self + other
+
+И теперь 
+k = BankAcoount('Iva', 500)
+k + 500 # 1000
+500 + k # 1000
+
+По аналогии можно реализовать и следующие методы
+
+__mul__ # умножение
+__sub__ # вычитание
+__truediv__ # деление
+
+Например
+
+
+class BankAccount:
+    def __init__(self, name, balance):
+        self.name = name
+        self.balance = balance
+
+    def __add__(self, other):
+        if isinstance(other, (int, float)):
+            return self.balance + other
+
+    def __radd__(self, other):
+        return self + other
+
+    def __mul__(self, other): # добавили умножение по аналогии с суммой
+        if isinstance(other, (int, float)):
+            return self.balance * other
+ 
+    def __rmul__(self, other): # добавили правое умножение по аналогии с суммой
+        return self * other
+
+Теперь
+a = BankAccount('Ivan', 1000)
+a * 3 # 3000
+3 * a # 3000
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
