@@ -1,0 +1,51 @@
+Следующая проблема
+Создадим класс
+
+class Lion:
+    def __init__(self, name):
+        self.name = name
+        
+при обращении к нему мы увидем следующее
+
+q = Lion()
+q # <__main__.Lion at 0x231b4367700>
+
+И вот эта надпись по сути не даёт ничего, посмотрев на неё невооружённым глазом
+можно просто сказать белеберда, давайте попробуй вывести какую-нибудь более полезную информацию
+
+class Lion:
+    def __init__(self, name):
+        self.name = name
+
+    def __repr__(self):
+        return f"The object Lion - {self.name}"
+
+и теперь
+
+s = Lion('Simba')
+s
+
+# The object Lion - Simba
+
+Теперь мы более осознано всё видим и выводим нужную информацию
+
+Теперь поработаем с методом __str__
+
+class Lion:
+    def __init__(self, name):
+        self.name = name
+
+    def __repr__(self):
+        return f"The object Lion - {self.name}"
+
+    def __str__(self):
+        return f"Lion - {self.name}"
+
+w = Lion('Vasya')
+w
+# The object Lion - Vasya # Всё ещё отрабатывает метод __repr__
+
+print(w)
+# Lion - Vasya # Теперь отрабатывает метод __str__
+
+
