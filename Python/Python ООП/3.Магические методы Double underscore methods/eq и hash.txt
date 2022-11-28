@@ -1,0 +1,47 @@
+Что такое хэш
+Хэш - это некая математическая функция которая преобразует данные в число, а обратно
+из числа получить нельзя
+
+Для чего он нужен?
+
+Ну например, если мы хотим хранить изменяемые объекты в словарях
+Например список или класс
+
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __eq__(self, other):
+        return isinstance(other, Point) and \
+               self.x == other.x and self.x == other.x
+
+    def __hash__(self): # будем вычислять тут хэш передаваемых точек
+        return hash((self.x, self.y))
+   
+
+и теперь
+
+p1 = Point(3, 4)
+p2 = Point(3, 4)
+p3 = Point(30, 40)
+p1 == p2
+Out[6]: True
+p3 == p1
+Out[7]: False
+my_dict = {}
+my_dict[p1] = 100
+my_dict[p2] = 100
+my_dict
+Out[11]: {<__main__.Point at 0x29d22807fa0>: 100}
+my_dict[p2] = 200
+my_dict
+Out[13]: {<__main__.Point at 0x29d22807fa0>: 200}
+my_dict[p3] = 400
+my_dict
+Out[15]: 
+{<__main__.Point at 0x29d22807fa0>: 200,
+ <__main__.Point at 0x29d22807d30>: 400}
+
+
+
