@@ -1,0 +1,173 @@
+В питоне как мы говорили существует оператор вызова который обозначается оператором ()
+
+class Counter:
+    
+    def __init__(self):
+        print('init object', self)
+
+Сами по себе классы можно вызывать
+Counter() 
+
+init object <__main__.Counter object at 0x000001D250237EB0>
+Out[3]: <__main__.Counter at 0x1d250237eb0>
+
+Но экзмепляр класса уже вызвать нельзя
+
+p1 = Counter()
+init object <__main__.Counter object at 0x000001D250270220>
+p1()
+# Ошибка
+
+Для этого в классах существует метод __call__ # он автоматически проставляет три аргумента
+
+class Counter:
+
+    def __init__(self):
+        print('init object', self)
+    
+    def __call__(self, *args, **kwargs):
+        print('object call', self)
+
+Пробуем
+
+p2 = Counter()
+# init object <__main__.Counter object at 0x000001D250270CA0>
+p2()
+# object call <__main__.Counter object at 0x000001D250270CA0>
+
+Создадим такой класс который будет запоминать количество обращений к экзмепляру
+
+class Counter:
+
+    def __init__(self):
+        self.counter = 0
+        print('init object', self)
+
+    def __call__(self, *args, **kwargs):
+        self.counter += 1
+        print(f'Вызвано - {self.counter}')
+
+p1 = Counter()
+# init object <__main__.Counter object at 0x0000024906B87E50>
+p1()
+# Вызвано - 1
+p1()
+# Вызвано - 2
+p1()
+# Вызвано - 3
+
+p2 = Counter()
+# init object <__main__.Counter object at 0x0000024906BB0790>
+p2()
+# Вызвано - 1
+
+Теперь посмотрим как этот магический метод можно использовать как декоратор
+Создадим класс который будет измерять время работы переданных функций
+
+from time import perf_counter # для работы с таймером
+
+
+class Timer:
+    def __init__(self, func):
+        self.fn = func
+
+    def __call__(self, *args, **kwargs):
+        start = perf_counter()
+        print(f'Вызывается функция {self.fn.__name__}')
+        result = self.fn(*args, **kwargs)
+        finish = perf_counter()
+        print(f"Функция отработала {finish - start}")
+        return result
+
+И создадим две функции
+
+@Timer
+def factorial(n):
+    pr = 1
+    for i in range(1, n + 1):
+        pr *= i
+    return pr
+
+factorial(100)
+
+# Вывод
+Вызывается функция factorial
+Функция отработала 3.100000321865082e-05
+#
+
+Но проблема будет следующая
+@Timer
+def fib(n):
+    if n <= 2:
+        return 1
+    return fib(n - 1) + fib(n - 2)
+
+fib(3)
+# Вывод
+Вызывается функция fib
+Вызывается функция fib
+Функция отработала 3.2999960239976645e-06
+Вызывается функция fib
+Функция отработала 3.300025127828121e-06
+Функция отработала 2.1599989850074053e-05
+# 
+
+Из-за рекурсивности функции возникают такие проблемы что при каждом вызове fib(), а рекурсия постоянно
+её вызывает
+чтоб это исправить нужно вызвать следующим образом
+
+def fib(n):
+    if n <= 2:
+        return 1
+    return fib(n - 1) + fib(n - 2)
+
+Timer(fib)(3) # задекорировать конкретно таким образом
+
+# Вывод
+Вызывается функция fib
+Функция отработала 4.9000082071870565e-06
+#
+
+Где можно использовать метод __call__ ?
+
+Реализация метода __call__ нужна, когда мы хотим, чтобы экземпляры класса вели себя как функции.
+А поскольку метод __call__ делает экземпляр вызываемым, мы можем использовать его в качестве декоратора.
+
+class Storage:
+    def __init__(self, func):
+        self.func = func
+
+    def __call__(self):
+        print("Подключение к хранилищу")
+        self.func()
+        print("Отключение от хранилища")
+
+
+@Storage
+def upload_file():
+    print("Загрузка файла....")
+
+
+upload_file()
+
+В результате будет следующий вывод
+#
+Подключение к хранилищу
+Загрузка файла....
+Отключение от хранилища
+#
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

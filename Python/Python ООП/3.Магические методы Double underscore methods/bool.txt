@@ -1,0 +1,94 @@
+Метод bool сам по себе помогает определить пустоту в значении
+для чисел пустым значением является 0
+для списком пустой список и тд
+а что с классами?
+
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+p1 = Point(0, 0)
+bool(p1)
+Out[4]: True
+
+Всегда будет True при любых значениях, допустим мы хотим изменить данное поведение? Как нам быть
+для начала разберёмся как же всё же bool работает если метод __bool__ не определён
+то тогда метод bool смотрит в метод __len__ это можно проверить следующим способом
+
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __len__(self):
+        print('call __len__')
+        return abs(self.x - self.y)
+
+Определим метод len и обратимся к bool
+
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __len__(self):
+        print('call __len__')
+        return abs(self.x - self.y)
+
+
+p1 = Point(5, 3)
+print(bool(p1))
+p2 = Point(3, 3)
+print(bool(p2)) 
+
+# Вывод
+call __len__
+True
+call __len__
+False
+#
+
+Мы видим и в правду что bool ищет метод len если его нет то будет всегда True
+Но теперь давайте определим метод bool и посмотрим что будет
+
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __len__(self):
+        print('call __len__')
+        return abs(self.x - self.y)
+
+    def __bool__(self):
+        print('call __bool__')
+        return self.x != 0 or self.y != 0
+
+Метод bool должен возвращать False допустим только если эта точка в началах координат
+и теперь посмотрим на вывод
+
+p1 = Point(5, 3)
+print(bool(p1))
+p2 = Point(3, 3)
+print(bool(p2))
+p3 = Point(0, 0)
+print(bool(p3))
+
+# Вывод
+call __bool__
+True
+call __bool__
+True
+call __bool__
+False
+#
+
+
+
+
+
+
+
+
+
