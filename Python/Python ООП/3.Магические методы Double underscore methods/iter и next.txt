@@ -75,6 +75,52 @@ Traceback (most recent call last):
     next(not_inf)
 StopIteration
 
+Задание для понимания
+
+Создайте класс PowerTwo, который возвращает следующую степень двойки, 
+начиная с нулевой степени (20=1). Внутри класса реализуйте:
+
+метод __init__. Он должен принимать одно положительное число - степень двойки, 
+до которой нужно итеририроваться включительно (см пример ниже)
+методы __iter__ и __next__ для итерирования по степеням двойки
+
+for i in PowerTwo(4): # итерируемся до 4й степени двойки
+    print(i)
+
+# Цикл выше печатает следующие числа
+1
+2
+4
+8
+16
+
+numbers = PowerTwo(2)
+
+iterator = iter(numbers)
+
+print(next(iterator)) # печатает 1
+print(next(iterator)) # печатает 2
+print(next(iterator)) # печатает 4
+print(next(iterator)) # исключение StopIteration
+
+Решение: 
+
+
+
+class PowerTwo:
+    def __init__(self, n):
+        self.n = list(range(n + 1))
+        self.index = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.index >= len(self.n):
+            raise StopIteration
+        number = self.n[self.index]
+        self.index += 1
+        return 2 ** number
 
 
 

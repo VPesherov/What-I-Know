@@ -1,0 +1,97 @@
+Допустим есть следующие классы
+
+class Person:
+
+    def breathe(self):
+        print('Человек дышит')
+
+
+class Doctor(Person):
+
+    def breathe(self):
+        print('Доктор дышит')
+
+p = Person()
+d = Doctor()
+d.breathe() # Доктор дышит
+
+А допустим мы хотим сделать так, что бы в начале вызывался метод breathe в начале из дочернего
+затем из родительского класса
+В этом поможет слово super
+
+class Person:
+
+    def breathe(self):
+        print('Человек дышит')
+
+
+class Doctor(Person):
+
+    def breathe(self):
+        print('Доктор дышит')
+        super().breathe()
+
+
+p = Person()
+d = Doctor()
+d.breathe()
+# вывод
+Доктор дышит
+Человек дышит
+#
+
+Готово! Вызываются два метода в начале из Doctor затем уже из Person
+Для чего это может пригодиться? Например при инициализации
+
+class Person:
+
+    def __init__(self, name, surname):
+        self.name = name
+        self.surname = surname
+
+    def breathe(self):
+        print('Человек дышит')
+
+
+class Doctor(Person):
+
+    def __init__(self, name, surname, age):
+        super().__init__(name, surname) # тут мы обратимся к инициализатору из родительского класса
+					# и повторения кода уже не будет
+        self.age = age
+
+    def breathe(self):
+        print('Доктор дышит')
+        super().breathe()
+
+
+p = Person('Ivan', 'Petrov')
+d = Doctor('Boris', 'Ivanov', 33)
+print(p.name, p.surname)
+print(d.name, d.surname, d.age)
+
+# Вывод
+Ivan Petrov
+Boris Ivanov 33
+#
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
