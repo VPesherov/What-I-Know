@@ -1,0 +1,109 @@
+Как и любой другой класс, менеджер контекста может сохранять в атрибутах некоторое внутреннее состояние. 
+В следующем примере показано, 
+как создать менеджер контекста для измерения времени выполнения блока кода или функции:
+
+
+import time
+
+
+def calculate():
+    for i in range(1000000):
+        2 ** 2123
+
+
+class Timer:
+    def __enter__(self):
+        self.start = time.time()
+        self.end = 0.0
+        return lambda: self.end - self.start
+
+    def __exit__(self, *args):
+        self.end = time.time()
+
+
+with Timer() as timer:
+    time.sleep(0.6)
+print(timer())
+
+with Timer() as timer2:
+    time.sleep(1.5)
+print(timer2())
+
+with Timer() as timer_calc:
+    calculate()
+print(timer_calc())
+
+# Вывод
+0.6006731986999512
+1.5008442401885986
+3.2232203483581543
+#
+
+Когда мы используем класс Timer в операторе with, вызывается магический метод __enter__(). 
+Этот метод использует time.time() для получения времени в начале блока кода with и 
+сохраняет его в атрибут .start. Он также инициализирует .end и возвращает лямбда-функцию, 
+которая вычисляет разницу во времени. В этом случае .start содержит начальное 
+состояние или измерение времени.
+
+Как только блок with заканчивается, вызывается метод __exit__(). 
+Метод получает время в конце блока и обновляет значение атрибута .end, 
+чтобы лямбда-функция могла вычислить время, необходимое для запуска блока кода with.
+
+Создание контекстных менеджеров на основе функций
+
+Есть альтернативный и удобный способ реализации протокола управления контекстом: 
+использовать функцию генератора и декоратор @contextmanager из встроенного модуля @contextlib. 
+
+Вам всего лишь нужно задекорировать соответствующим образом функцию-генератор 
+с помощью @contextmanager и вы получите контекстный менеджер. 
+При этом @contextmanager автоматически предоставит оба требуемых метода __enter__() и __exit__().
+
+from contextlib import contextmanager
+
+
+@contextmanager
+def my_context_manager():
+    print("Начало контекстного менеджера ...")
+    yield "Ух ты как круто!"
+    print("Конец контекстного менеджера...")
+
+
+with my_context_manager() as phrase:
+    print(phrase)
+
+# Вывод
+Начало контекстного менеджера ...
+Ух ты как круто!
+Конец контекстного менеджера...
+#
+
+Ниже приготовил для вас один пример обработки подключения к БД mysql. 
+
+import os
+import contextlib
+import mysql.connector
+
+
+@contextlib.contextmanager
+def get_mysql_conn(db):
+    """
+    Context manager to automatically close DB connection. 
+    We retrieve credentials from Environment variables
+    """
+    conn = mysql.connector.connect(
+        host=os.environ.get('MYSQL_HOST'),
+        user=os.environ.get('MYSQL_USER'),
+        password=os.environ.get('MYSQL_PWD'),
+        database=db
+    )
+    
+    try:
+        yield conn
+    finally:
+        conn.close()
+
+Обратите внимание на блок try-finally. В нем так раз мы пытаемся вернуть объект conn в 
+менеджер контекста блока with и вызываем метод .close()
+
+
+

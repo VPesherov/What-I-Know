@@ -1,0 +1,55 @@
+
+Для создания своего собственного исключения нужно лишь создать класс который наследуется от
+BaseException
+
+class MyException(Exception):
+    '''This is my exception'''
+    pass
+
+raise MyException('hello')
+
+#Вывод
+Traceback (most recent call last):
+  File "C:\Users\Вячеслав\PycharmProjects\codewars\main.py", line 7, in <module>
+    raise MyException('hello')
+__main__.MyException: hello
+#
+
+Уже исключение
+
+class MyException(Exception):
+    '''This is my exception'''
+
+    def __init__(self, *args):
+        if args:
+            self.message = args[0]
+        else:
+            self.message = None
+
+    def __str__(self):
+        if self.message:
+            return f'MyException ({self.message})'
+        else:
+            return "MyException is empty"
+
+raise MyException('hello')
+
+#Вывод
+Traceback (most recent call last):
+  File "C:\Users\Вячеслав\PycharmProjects\codewars\main.py", line 17, in <module>
+    raise MyException('hello')
+__main__.MyException: MyException (hello)
+#
+
+Вот так можно создавать иключения и вызывать их
+
+
+
+
+
+
+
+
+
+
+

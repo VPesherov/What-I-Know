@@ -18,5 +18,22 @@ ZeroDivisionError
 Ошибка division by zero ZeroDivisionError('division by zero')
 #
 
+Это можно использовать для логов
+но надо остановить прогу для этого в этом и поможет raise
+
+try:
+    1/0
+except ZeroDivisionError as err:
+    print(f'Ошибка {err} {repr(err)}')
+    raise err
+
+
+
+
+
+
+
+
+
 
 
