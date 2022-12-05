@@ -1,0 +1,42 @@
+Одна из полезных особенностей — легкость добавления к полям значений по умолчанию. 
+Все ещё не требуется переопределять метод __init__, достаточно указать значения по 
+умолчанию для атрибута прямо в классе.
+
+from dataclasses import dataclass
+
+@dataclass
+class InventoryItem:
+    name: str
+    price: float = 9.99
+    quantity: int = 1
+
+
+desk = InventoryItem('Computer desk', 1000, 12)
+pen = InventoryItem('Pen')
+monitor = InventoryItem('Monitor', 300)
+clock = InventoryItem('Clock', quantity=10)
+print(desk)
+print(pen)
+print(monitor)
+print(clock)
+
+# Вывод
+InventoryItem(name='Computer desk', price=1000, quantity=12)
+InventoryItem(name='Pen', price=9.99, quantity=1)
+InventoryItem(name='Monitor', price=300, quantity=1)
+InventoryItem(name='Clock', price=9.99, quantity=10)
+#
+
+
+
+
+
+
+
+
+
+
+
+
+
+
