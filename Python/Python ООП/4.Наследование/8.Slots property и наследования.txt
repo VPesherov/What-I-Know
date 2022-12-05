@@ -1,0 +1,52 @@
+Создадим следующий класс со slots
+
+class Rectangle:
+    __slots__ = 'width', 'height'
+
+    def __init__(self, a, b):
+        self.width = a
+        self.height = b
+
+А теперь мы хотим добавить периметр в наш класс и например площадь, что произойдёт?
+
+
+class Rectangle:
+    __slots__ = 'width', 'height'
+
+    def __init__(self, a, b):
+        self.width = a
+        self.height = b
+
+    @property
+    def perimetr(self):
+        return (self.height + self.width) * 2
+
+    @property
+    def area(self):
+        return self.height * self.width
+
+
+Теперь 
+
+b = Rectangle(4, 5)
+b.area
+Out[8]: 20
+
+Всё спокойно работает, хотя они не указаны в slots
+С наследованием можно посмотреть здесь
+https://stepik.org/lesson/682567/step/1?unit=681379
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
