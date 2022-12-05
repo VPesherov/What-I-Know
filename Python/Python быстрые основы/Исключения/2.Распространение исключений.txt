@@ -1,0 +1,36 @@
+def first_func():
+    print('Начало работы функции first_func')
+    try:
+        second_func()
+    except Exception as ex:
+        print(f'Внимание! Обработано исключение: {ex}')
+    print('Конец работы функции first_func')
+
+
+def second_func():
+    print('Начало работы функции second_func')
+    third_func()
+    print('Конец работы функции second_func')
+
+
+def third_func():
+    print('Начало работы функции third_func')
+    1 / 0
+    print('Конец работы функции third_func')
+
+
+print(1)
+print(2)
+first_func()
+print(3)
+
+# Вывод
+1
+2
+Начало работы функции first_func
+Начало работы функции second_func
+Начало работы функции third_func
+Внимание! Обработано исключение: division by zero
+Конец работы функции first_func
+3
+#
