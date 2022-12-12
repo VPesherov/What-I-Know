@@ -1,0 +1,113 @@
+Как создаются базовые тесты?
+Допустим у нас есть функция которую мы хотим протестировать
+
+def get_reply(number):
+    if number % 5 == 0 and number % 3 == 0:
+        return 'FizzBuzz'
+    elif number % 3 == 0:
+        return 'Fizz'
+    elif number % 5 == 0:
+        return 'Buzz'
+    else:
+        return ''
+
+Для её теста создадим отдельный питон файл test.py
+и в нём импортируем наш файл с данной функцией и unittest
+
+import unittest
+import main
+
+и создадим специальный класс для проверки нашей функции
+
+class FizzBuzzTests(unittest.TestCase):
+
+    def test_fizz(self):
+        number = 6 # то что передадим в функцию
+        result = main.get_reply(number) # возвращение результата из нашей функции
+
+        self.assertEqual(result, 'Fizz') # проверка результата и ожидаемого результата
+
+Также пропишем и остальные случаи выполнения нашей функции
+и добавим к ним небольшой вывод
+
+import unittest
+import main
+
+class FizzBuzzTests(unittest.TestCase):
+
+    def test_fizz(self):
+        number = 6
+        result = main.get_reply(number)
+        print('test1')
+        self.assertEqual(result, 'Fizz')
+
+    def test_buzz(self):
+        number = 10
+        result = main.get_reply(number)
+        print('test2')
+        self.assertEqual(result, 'Buzz')
+
+    def test_fizzbuzz(self):
+        number = 15
+        result = main.get_reply(number)
+        print('test3')
+        self.assertEqual(result, 'FizzBuzz')
+
+Теперь мы можем в pycharm нажать правой кнопкой мыши и выбрать запустить тесты(также можно нажать
+на конкретный тест и запустить его отдельно)
+Либо запустить тесты через консоль
+Но тогда в конце кода нужно добавить
+
+if __name__ == '__main__':
+    unittest.main()
+
+В консоли:
+python test.py
+
+#Вывод
+test2
+.test1
+.test3
+.
+----------------------------------------------------------------------
+Ran 3 tests in 0.001s
+
+OK
+#
+
+А если мы например функцию исходную немного подправим например в этой строчке
+    elif number % 3 == 0:
+        return 'Fizz1'
+
+то произойдёт следующее при неверной работе тестов
+
+test2
+.test1
+Ftest3
+.
+======================================================================
+FAIL: test_fizz (__main__.FizzBuzzTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Вячеслав\PycharmProjects\codewars\test.py", line 10, in test_fizz
+    self.assertEqual(result, 'Fizz')
+AssertionError: 'Fizz1' != 'Fizz'
+- Fizz1
+?     -
++ Fizz
+
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.002s
+
+FAILED (failures=1)
+
+
+
+
+
+
+
+
+
+
