@@ -1,0 +1,10 @@
+Информацию о функциях, методах или процедурах можно получить с помощью функции help
+
+help(list.append)
+
+# Вывод
+Help on method_descriptor:
+
+append(self, object, /)
+    Append object to the end of the list.
+#

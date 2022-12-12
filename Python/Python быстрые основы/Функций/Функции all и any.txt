@@ -44,4 +44,10 @@ condition_3 = a < 1000
 print(all([condition_1, condition_2, condition_3])) # False
 print(any((condition_1, condition_2, condition_3))) # True
 
+Ещё полезный пример, условно у нас есть список игроков
+И мы хотим проверить у всех ли игроков рейтинг больше 2700
+
+players = [('Carlsen', 2842), ('Caruana', 2822), ('Ding', 2797)]
+print(all(rating > 2700 for name, rating in players))
+
 
