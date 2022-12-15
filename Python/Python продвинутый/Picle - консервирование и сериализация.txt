@@ -1,0 +1,107 @@
+В программирование зачастую появляется проблема сериализации данных
+Сериализация данных - это процесс перевода какой-либо структуры данных в последовательность
+условно битов, обратная операция к сериализации - десериализация.
+
+В частности сериализация нужна для того что бы сохранять состояния объекта например в файл
+а затем используя эти данные восстанавливать состояния объектов в памяти.
+
+В пайтоне этот процесс называется pickle(консервирование)
+Создадим простой класс
+
+class Character():
+    def __init__(self, race, damage = 10):
+        self.race = race
+        self.damage = damage
+        self.health = 100
+
+    def hit(self, damage):
+        self.health -= damage
+
+    def is_dead(self):
+        return self.health == 0
+
+c = Character('Elf')
+c.hit(10)
+print(c.health) # 90
+
+Теперь попробует сохранить наши данные объекта c в файл
+импортируем pickle
+
+import pickle
+
+with open(r'C:\Users\Вячеслав\PycharmProjects\codewars\test.bin', 'w+b') as f: # w + b - write + binary
+    pickle.dump(c, f)
+
+теперь создасться файл со следующим содержимым
+
+��E       �__main__��	Character���)��}�(�race��Elf��damage�K
+�health�KZub.
+
+ничего не понятно, но он же бинарный всё верно!
+Сделаем объект c = None
+c = None
+print(c) # None
+
+и восстановим данные из файла
+
+with open(r'C:\Users\Вячеслав\PycharmProjects\codewars\test.bin', 'rb') as f:
+    c = pickle.load(f)
+
+print(c.health) # 90
+
+Готово! Хп вернулось
+А всё остальное?
+
+print(c.__dict__) # {'race': 'Elf', 'damage': 10, 'health': 90}
+
+всё отлично!
+
+Но существует следующая проблема - допустим мы изменили наш класс и добавили новый атрибут в него
+    def __init__(self, race, armor, damage = 10):
+        self.race = race
+	self.armor = armor
+        self.damage = damage
+        self.health = 100
+
+и тогда когда мы проводим сериализацию новых данных не появится
+
+with open(r'C:\Users\Вячеслав\PycharmProjects\codewars\test.bin', 'rb') as f:
+    c = pickle.load(f)
+
+print(c.health) # 90
+print(c.__dict__) # {'race': 'Elf', 'damage': 10, 'health': 90}
+
+Но мы можем управлять данным состоянием с помощью магических методов
+getstate - определяет то что будет пиклиться
+setstate - управляет процессом дисериализации
+
+Добавим в наш класс следующие строчки
+
+    def __setstate__(self, state):
+        self.race = state.get('race', 'Elf') # мы хотим получить атрибут 'race' из файла если его нет 
+						# по умолчанию будет присвоен 'Elf' и аналогично со
+						# всем ниже
+        self.damage = state.get('damage', 10)
+        self.armor = state.get('armor', 20)
+        self.health = state.get('health', 100)
+
+и пробуем
+
+with open(r'C:\Users\Вячеслав\PycharmProjects\codewars\test.bin', 'rb') as f:
+    c = pickle.load(f)
+
+print(c.health) # 90
+print(c.__dict__) # {'race': 'Elf', 'damage': 10, 'armor': 20, 'health': 90}
+
+И как мы видим всё так как и должно быть хп было 90 и взялось из файла, армора в файле не было
+и ему далось значение 20
+
+
+
+
+
+
+
+
+
+

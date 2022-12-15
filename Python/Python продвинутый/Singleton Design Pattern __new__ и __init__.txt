@@ -4,6 +4,10 @@
 
 https://stepik.org/lesson/529113/step/1?unit=521927
 
+и вот полезная
+
+https://webdevblog.ru/realizaciya-shablona-singleton-v-python/
+
 Например
 
 class Character:
