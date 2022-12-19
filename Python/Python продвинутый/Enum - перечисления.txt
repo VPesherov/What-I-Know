@@ -1,0 +1,45 @@
+Допустим у нас есть данные которые нужно как-то перечислить например сигналы светофора
+
+from enum import Enum
+
+
+class TrafficLight(Enum):
+    RED = 1 
+    YELLOW = 2
+    GREEN = 3
+
+print(TrafficLight.RED.name) # RED
+print(TrafficLight.RED.value) # 1
+
+Для вывода всех членов перечисления используем
+
+for c in TrafficLight:
+    print(c)
+
+# Вывод
+TrafficLight.RED
+TrafficLight.YELLOW
+TrafficLight.GREEN
+#
+
+Но при этом если допустим у нас только числа и мы хотим сравнивать их то лучше воспользоваться
+IntEnum
+
+from enum import IntEnum
+
+class Priority(IntEnum):
+    LOW = 1
+    NORMAL = 2
+    HIGH = 3
+
+print(Priority.LOW < Priority.NORMAL) # True
+
+Более практичное применение можно посмотреть здесь
+https://stepik.org/lesson/529117/step/1?unit=521931
+
+
+
+
+
+
+

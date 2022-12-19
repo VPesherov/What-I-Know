@@ -5,6 +5,8 @@ data = json.loads(str_json)
 # подробный видос по обработке и созданию json
 https://www.youtube.com/watch?v=rIhygmw9HZM&t=4s&ab_channel=egoroff_channel
 
+Вот ещё инфа
 
+https://stepik.org/lesson/529118/step/1?unit=521932
 
 
