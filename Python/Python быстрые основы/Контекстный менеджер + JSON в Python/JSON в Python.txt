@@ -9,4 +9,99 @@ https://www.youtube.com/watch?v=rIhygmw9HZM&t=4s&ab_channel=egoroff_channel
 
 https://stepik.org/lesson/529118/step/1?unit=521932
 
+Допустим есть следующий код
+
+import json
+
+
+class Tournament:
+
+    def __init__(self, name, year):
+        self.name = name
+        self.year = year
+
+tournaments = {
+    'Aeroflot Open': 2010,
+    'FIDE World Cup': 2018,
+    'FIDE Grand Prix': 2016
+}
+
+И мы хотим наши турниры преобразовать в json формат
+делаем следующее
+
+json_data = json.dumps(tournaments, indent=2) # сериализация - преобразование объекта в некий формат
+print(json_data)
+
+loaded = json.loads(json_data) # десериализация - обратный процесс сериализации
+print(type(loaded))
+print(loaded)
+
+# Вывод
+{
+  "Aeroflot Open": 2010,
+  "FIDE World Cup": 2018,
+  "FIDE Grand Prix": 2016
+}
+<class 'dict'>
+{'Aeroflot Open': 2010, 'FIDE World Cup': 2018, 'FIDE Grand Prix': 2016}
+#
+Итого мы видим что мы из словаря получили строку, затем снова из строки вернули в наш dict
+
+Попробуем другой тип данных преобразовать в json
+t1 = Tournament('Aeroflot Open', 2010)
+json_data = json.dumps(t1)
+
+итого получим ошибку, дело в том что в Python только примитивные типы данных могут
+быть преобразованы в json 
+например: dict, list, tuple, str, int, float, True, False, None
+
+Но если мы всё же очень хотим сериализовать Tournament 
+Вспомни что у словаря есть атрибут __dict__ так можно его и передать
+
+t1 = Tournament('Aeroflot Open', 2010)
+json_data = json.dumps(t1.__dict__) # сериализуем
+print(json_data)
+
+t = Tournament(**json.loads(json_data)) # десериализуем
+print(f'name={t.name}, year={t.year}')
+
+# Вывод
+{"name": "Aeroflot Open", "year": 2010}
+name=Aeroflot Open, year=2010
+#
+
+Создадим следующий класс игрока, и один из атрибутов будет хранить список турниров
+на котором участвовал игрок и сериализуем данный объект
+
+class ChessPlayer:
+    def __init__(self, tournaments1):
+        self.tournaments = tournaments1
+
+
+t1 = Tournament('Aeroflot Open', 2010)
+t2 = Tournament('FIDE World Cup', 2018)
+t3 = Tournament('FIDE Grand Prix', 2016)
+
+p1 = ChessPlayer([t1, t2, t3])
+json_data = json.dumps(p1.__dict__)
+print(json_data) # ошибка
+
+Ошибка так как когда механизм сериализации доходит до объектов Tournament то он не может с ними
+справится так как у них уже нету __dict__
+Поможет справится с данной проблемой необязательный параметр функции default - он отвечает
+за то что говорит к какой функции обратиться механизму сериализации если происходят проблемы
+Делаем следующее
+
+json_data = json.dumps(p1.__dict__, default=lambda obj: obj.__dict__)
+print(json_data)
+
+# Вывод
+{"tournaments": [{"name": "Aeroflot Open", "year": 2010}, {"name": "FIDE World Cup", "year": 2018}, {"name": "FIDE Grand Prix", "year": 2016}]}
+#
+
+Ура! Всё сработало
+
+Ещё много интересного в этом видосе
+https://stepik.org/lesson/529118/step/1?unit=521932
+
 
