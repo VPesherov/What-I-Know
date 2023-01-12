@@ -20,7 +20,7 @@ next(d) # 3
 next(d) # Ошибка
 
 Выражения генератору они изначально являются итераторами
-b = (i ** 2 for i in range(1, 6)
+b = (i ** 2 for i in range(1, 6))
 print(next(b)) # 1
 print(next(b)) # 4
 
