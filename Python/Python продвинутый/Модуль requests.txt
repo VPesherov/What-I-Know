@@ -1,0 +1,157 @@
+Одна из самых популярных библиотек это библиотека requests, которая позволяет делать запросы по http
+
+import requests (его нужно дополнительно устанавливать)
+
+попробуем получить ответ от яндекса
+
+response = requests.get('https://www.yandex.ru/')
+print(response) # <Response [200]>
+
+200 - значит что запрос прошёл успешно
+type
+
+Можно выводить через print всю переменную, а можно обратиться к её атрибуту
+
+print(response.status_code) # 200
+
+Сделаем более сложную конструкцию запроса к сайта
+
+for url in ['https://www.yandex.ru/', 'https://www.ya1ndex.ru/', 'https://www.yandex.ru/12345/']:
+# в списке передадим адреса к которым хотим обратиться
+    try:
+        response = requests.get(url) # делаем запрос
+        response.raise_for_status() # проверяем успешность нашего запроса
+    except requests.HTTPError as http_err: # проверяем на HttpError
+        print(f'Error: {http_err}')
+    except Exception as err: # проверяем на другие ошибки
+        print(f'Unknown error: {err}') 
+    else: # или же всё хорошо
+        print('Connection Successfully!') 
+
+# Вывод
+Connection Successfully!
+Unknown error: HTTPSConnectionPool(host='www.ya1ndex.ru', port=443): Max retries exceeded with url: 
+/ (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x00000235B677E290>: 
+Failed to establish a new connection: [Errno 11001] getaddrinfo failed'))
+Error: 404 Client Error: Not Found for url: https://www.yandex.ru/12345/
+#
+
+Видим по первому адресу прошли, второй не найден, третий тоже ошибка
+
+Также мы можем посмотреть контент в виде html с помощью атрибута content
+
+response = requests.get('https://www.yandex.ru/')
+print(response.content)
+
+# Вывод
+b'<body></body><script nonce=\'cf64211a3a7ac54aa88d60f5ce13b03b\'>var 
+it = {"host":"https:\\u002F\\u002Fsso.dzen.ru\\u002Finstall?uuid=b92ebfef-01bc-41b2-b8d2-05e1eac2541b","retpath":
+"https:\\u002F\\u002Fdzen.ru\\u002F?yredirect=true"};(function() 
+{ var form = document.createElement(\'form\'); var element1 = document.createElement(\'input\'); 
+... # и ещё много строк будет
+#
+
+Может быть проблема с кодировкой страницы, для этого нам нужно сделать encoding
+
+response.encoding = 'utf-8'
+
+Это может быть полезно при работе с атрибутом text
+
+response.encoding = 'utf-8'
+print(response.text)
+
+# Вывод
+<!doctype html><html prefix="og: http://ogp.me/ns#"><meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title data-react-helmet="true">Ой!</title>
+...
+#
+
+например мы хотим анализировать заголовки сайтов
+
+yandex_response = requests.get('https://www.yandex.ru/')
+print(yandex_response.headers)
+print()
+
+# Вывод
+{'Content-Length': '11176', 'Content-Type': 'text/html', 'NEL': 
+'{"report_to": "network-errors", "max_age": 100, "success_fraction": 0.001, "failure_fraction": 0.1}', 
+'Report-To': '{ "group": "network-errors", "max_age": 100, "endpoints": [{"url": "https://dr.yandex.net/nel", "priority": 1}, 
+{"url": "https://dr2.yandex.net/nel", "priority": 2}]}', 
+'X-Content-Type-Options': 'nosniff', 'X-Yandex-EU-Request': '0', 
+'X-Yandex-Req-Id': '1674530843860691-12638320831091941334-sas3-0887-25d-sas-l7-balancer-8080-BAL'}
+#
+
+Теперь мы можем работать с этим словарём как с объектом
+и можно обращаться к нужному ключу и ключе нечувствителен к регистру
+
+print(yandex_response.headers["content-type"])
+
+# text/html
+
+Более интересный пример
+Перейдём на фейковый сайт с комментариями
+И получим все комментарии которые имеют postId = 1, передадим мы этом с помощью params
+
+placeholder_response = requests.get('http://jsonplaceholder.typicode.com/comments', params=b'postId=1')
+print(placeholder_response.json())
+
+# Вывод
+[{'postId': 1, 'id': 1, 'name': 'id labore ex et quam laborum', 'email': 'Eliseo@gardner.biz', 'body': 
+'laudantium enim quasi est quidem magnam voluptate ipsam eos\ntempora quo necessitatibus\ndolor quam autem quasi\nreiciendis 
+et nam sapiente accusantium'}, {'postId': 1, 'id': 2, 'name': 'quo vero reiciendis velit similique earum', 'email': 
+'Jayne_Kuhic@sydney.com', 'body': 'est natus enim nihil est dolore omnis voluptatem numquam\net omnis occaecati quod 
+ullam at\nvoluptatem error expedita pariatur\nnihil sint nostrum voluptatem reiciendis et'}, 
+{'postId': 1, 'id': 3, 'name': 'odio adipisci rerum aut animi', 'email': 'Nikita@garfield.biz', 'body': 
+'quia molestiae reprehenderit quasi aspernatur\naut expedita occaecati aliquam eveniet laudantium\nomnis quibusdam 
+delectus saepe quia accusamus maiores nam est\ncum et ducimus et vero voluptates excepturi deleniti ratione'}, 
+{'postId': 1, 'id': 4, 'name': 'alias odio sit', 'email': 'Lew@alysha.tv', 'body': 'non et atque\noccaecati 
+deserunt quas accusantium unde odit nobis qui voluptatem\nquia voluptas consequuntur itaque dolor\net qui 
+rerum deleniti ut occaecati'}, {'postId': 1, 'id': 5, 'name': 'vero eaque aliquid doloribus et culpa', 
+'email': 'Hayden@althea.biz', 'body': 'harum non quasi et ratione\ntempore iure ex voluptates in 
+ratione\nharum architecto fugit inventore cupiditate\nvoluptates magni quo et'}]
+#
+
+Если хотим несколько параметров - то передаём их в словаре
+
+placeholder_response = requests.get('http://jsonplaceholder.typicode.com/comments', params={'postId': 1, 'id': 1})
+print(placeholder_response.json())
+
+# Вывод
+[{'postId': 1, 'id': 1, 'name': 'id labore ex et quam laborum', 'email': 'Eliseo@gardner.biz', 'body': 
+'laudantium enim quasi est quidem magnam voluptate ipsam eos\ntempora quo necessitatibus\ndolor 
+quam autem quasi\nreiciendis et nam sapiente accusantium'}]
+#
+
+Также было бы неплохо при работе с requests устанавливать timeout если его не делать то мы можем где-нибудь в один
+момент подзависнуть(указывается timeout в секундах)
+
+print('start')
+try:
+    auth_response = requests.get("https://api.github.com/user", timeout=1)
+except Timeout:
+    print('Timeout')
+print(auth_response)
+
+#
+start
+<Response [401]>
+#
+
+Также важная часть всей этой темы это сессии, и за ними нужно следить, чтоб не нагружать время пк
+в этом нам поможет контекстный оператор
+
+with requests.Session() as session:
+	# код работающий с сессией
+
+и в конце автоматически коннект закроется
+
+Иногда нам нужно использовать количество повторений для запроса, чтоб избежать возможного сбоя
+
+adapter = HTTPAdapter(max_retries=3) # задаём количество повторений
+with requests.Session() as session:
+    session.mount('https://api.github.com/', adapter)
+
+
+
+

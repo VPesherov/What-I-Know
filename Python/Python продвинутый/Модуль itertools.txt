@@ -1,0 +1,299 @@
+https://stepik.org/lesson/529120/step/1?unit=521934
+
+В видосе очень много полезных функций и посчитать элементы и усовершенствованный zip
+сортировка списка словарей
+Модуль для работы с итераторами
+
+Допустим мы хотим сгенерировать чётные числа
+просто способ это сделать через list comperehension
+
+even_numbers = [x for x in range(10) if x % 2 == 0]
+print(even_numbers) # [0, 2, 4, 6, 8]
+
+Но давайте сделаем это с помощью itertools
+с помощью функции count
+
+import itertools
+
+even_numbers = itertools.count(0, 2) # начинаем с 0 и делаем шаг 2
+print(even_numbers) # count(0, 2)
+print(next(even_numbers)) # 0
+print(next(even_numbers)) # 2
+print(next(even_numbers)) # 4
+
+Но есть проблема, что если мы пройдёмся по элементам even_numbers то мы зациклимся и получим ошибка
+так что обязательно надо иметь условие выхода
+
+for x in even_numbers:
+    print(x, end=" ")
+    if x > 20:
+        break
+
+# 0 2 4 6 8 10 12 14 16 18 20 22 
+
+но это не лучший путь делать условие, более лучше будет совместить этот способ с list comperhensions
+
+print(list(next(even_numbers) for _ in range(5)))
+# [0, 2, 4, 6, 8]
+
+с помощью count можно смулировать работу функции enumerate например
+
+print(list(zip(itertools.count(), ['a', 'b', 'c'])))
+[(0, 'a'), (1, 'b'), (2, 'c')]
+
+Иногда нам надо сгенерировать последовательность из повторяющихся элементов
+Но в начале напишем функцию которая поможет нам наглядно видеть итерабельную последовательность
+
+def print_iterable(iterable, end=None):
+    for x in iterable:
+        if end:
+            print(x, end=end)
+        else:
+            print(x)
+
+
+ones = itertools.repeat(1, 5)
+print(ones) # repeat(1, 5)
+print_iterable(ones, ' ') # 1 1 1 1 1
+
+Давайте теперь достаточно эффективно сгенерим квадраты чисел
+
+print(list(map(pow, range(10), itertools.repeat(2))))
+# [0, 1, 4, 9, 16, 25, 36, 49, 64, 81]
+Как это работает?
+В функцию pow первым аргументом передаётся число из range и будет постоянно передаваться 2 из функции repeat
+Для организации цикла с большим количество итераций repeat будет точно работать быстрее
+Например для такого, если вдруш нам понадобиться провести операции с каким-нибудь числом
+несколько тысяч раз:
+
+for x in itertools.repeat(2, 10000):
+    print(x ** 2)
+
+# Вывод
+2
+2
+2
+... # 10000 по 2
+#
+
+и он будет работать точно быстрее range()
+
+Также мы можем бесконечно создавать последовательность каких-то чисел например нам нужно
+чтоб постоянно выводились
+1 -1 2
+
+pos_neg_ones = itertools.cycle([1, -1, 2])
+# чтоб не зациклилось выведем их 10 раз
+print(list(next(pos_neg_ones) for _ in range(10)))
+ 
+# [1, -1, 2, 1, -1, 2, 1, -1, 2, 1]
+
+Следующая функция accumulate
+
+print(list(itertools.accumulate([1, 2, 3, 4, 5])))
+
+# [1, 3, 6, 10, 15]
+
+Эта функция применяет какую-либо функцию к последовательности и он должен увеличивать её
+(по умолчанию складывает парами кроме первого)
+со строками аналогично
+
+print(list(itertools.accumulate(['A', 'B', 'C', 'D'])))
+# ['A', 'AB', 'ABC', 'ABCD']
+
+Давайте применим функцию max
+
+print(list(itertools.accumulate([3, 1, 4, 2, 7, 3, 8, 5, 9], max)))
+#[3, 3, 4, 4, 7, 7, 8, 8, 9]
+
+Первый элемент так и остаётся 3, дальше мы сравниваем из 3 и 1 будет 3, дальше он сравнивает 3 из прошлого результата
+и 4 получим 4 и тд
+
+Далее функция chain которая расскладывает наши последовательности
+
+print(list(itertools.chain('ABC', 'DEF')))
+#['A', 'B', 'C', 'D', 'E', 'F']
+
+Если нам нужно итерабельную посследовательность разложить то используем следующее
+print(list(itertools.chain.from_iterable(['ABC', 'DEF'])))
+# ['A', 'B', 'C', 'D', 'E', 'F']
+
+Или склеим несколько списков
+print(list(itertools.chain([1, 2, 3], [4, 5, 6], [7, 8, 9])))
+# [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+Следующая функция dropwhile, она применяет функцию ко всем числам и там где истино она их убирает их последовательности
+
+print(list(itertools.dropwhile(lambda x: x < 3, [1, 2, 3, 4, 5])))
+#[3, 4, 5]
+
+функция takewhile работает наоборот
+
+print(list(itertools.takewhile(lambda x: x < 3, [1, 2, 3, 4, 5])))
+# [1, 2]
+
+Есть также функция filterfalse
+
+print(list(itertools.filterfalse(lambda x: x%2 == 0, range(10))))
+# [1, 3, 5, 7, 9]
+
+Между takewhile и filterfalse разница во внутренней реализации и также во filterfalse - необязательно указывать
+lambda она также отфильтруем элементы которые могут быть интерпретированы в false
+
+Теперь вспомним функцию zip
+Следующий код
+
+names = ['Slava', 'Kirill', 'Andrey']
+ages = [19, 20, 30]
+print(*zip(names, ages))
+# ('Slava', 19) ('Kirill', 20) ('Andrey', 30)
+
+Но если мы помним что если в zip у нас будут неравные списки то zip просто откинет лишнее
+
+names = ['Slava', 'Kirill', 'Andrey', 'Pavel']
+ages = [19, 20, 30]
+print(*zip(names, ages))
+# ('Slava', 19) ('Kirill', 20) ('Andrey', 30)
+
+И это поведение неоправдано, например пользователь забыл ввести возраст и система его выкинула из-за этого?
+Справедливо? Не всегда
+Исправим это с помощью zip_longest 
+
+names = ['Slava', 'Kirill', 'Andrey', 'Pavel']
+ages = [19, 20, 30]
+print(dict(itertools.zip_longest(names, ages)))
+
+# {'Slava': 19, 'Kirill': 20, 'Andrey': 30, 'Pavel': None}
+
+Мы можем заменить None на нужное нам значение например None
+
+names = ['Slava', 'Kirill', 'Andrey', 'Pavel']
+ages = [19, 20, 30]
+print(dict(itertools.zip_longest(names, ages, fillvalue=0)))
+# {'Slava': 19, 'Kirill': 20, 'Andrey': 30, 'Pavel': 0}
+
+Следующая функция - функция группировки groupby
+
+for key, grp in itertools.groupby([1, 1, 1, 2, 2, 2, 3, 3]):
+    print(f'{key} : {list(grp)}')
+
+# Вывод
+1 : [1, 1, 1]
+2 : [2, 2, 2]
+3 : [3, 3]
+#
+
+Теперь мы наглядно видим что по ключу один у нас список из 3 элементом, по ключу 2 из 3 и по ключу 3 из 2ух
+но мы столкнёмся со следующей проблемой
+
+for key, grp in itertools.groupby([1, 2, 1, 2, 2, 3, 3, 2]):
+    print(f'{key} : {list(grp)}')
+
+# Вывод
+1 : [1]
+2 : [2]
+1 : [1]
+2 : [2, 2]
+3 : [3, 3]
+2 : [2]
+#
+Из этого можно сделать вывод что groupby учитывает порядок следования элементов
+Эта проблема легко решиться с помощью функций sorted
+
+lst = [1, 2, 1, 2, 2, 3, 3, 2]
+for key, grp in itertools.groupby(sorted(lst)):
+    print(f'{key} : {list(grp)}')
+
+# Вывод
+1 : [1, 1]
+2 : [2, 2, 2, 2]
+3 : [3, 3]
+#
+
+А если мы хотим сгруппировать более сложные данные? Например словарь
+
+forecast =[ {'humidity' : 20, 'temperature' : 78, 'wind' : 7},
+            {'humidity' : 50, 'temperature' : 61, 'wind' : 10},
+            {'humidity' : 100, 'temperature' : 81, 'wind' : 5},
+            {'humidity' : 90, 'temperature' : 62, 'wind' : 15},
+            {'humidity' : 20, 'temperature' : 84, 'wind' : 19},
+            {'humidity' : 0, 'temperature' : 66, 'wind' : 28},
+            {'humidity' : 100, 'temperature' : 87, 'wind' : 12},
+            {'humidity' : 0, 'temperature' : 68, 'wind' : 14},
+            {'humidity' : 90, 'temperature' : 86, 'wind' : 4},
+            {'humidity' : 50, 'temperature' : 68, 'wind' : 0}
+        ]
+
+Тут мы видим список словарей
+Создадим вспомогательную функцию которая поможет решить данную проблему
+
+def group_sorted(iterable, key=None):
+    return itertools.groupby(sorted(iterable, key=key), key=key)
+
+grouped_data = group_sorted(forecast, key=lambda x: x['humidity']) # в ключ передаём lambda функцию
+for key, grp in grouped_data:
+    print(key, list(grp))
+
+# Вывод
+0 [{'humidity': 0, 'temperature': 66, 'wind': 28}, {'humidity': 0, 'temperature': 68, 'wind': 14}]
+20 [{'humidity': 20, 'temperature': 78, 'wind': 7}, {'humidity': 20, 'temperature': 84, 'wind': 19}]
+50 [{'humidity': 50, 'temperature': 61, 'wind': 10}, {'humidity': 50, 'temperature': 68, 'wind': 0}]
+90 [{'humidity': 90, 'temperature': 62, 'wind': 15}, {'humidity': 90, 'temperature': 86, 'wind': 4}]
+100 [{'humidity': 100, 'temperature': 81, 'wind': 5}, {'humidity': 100, 'temperature': 87, 'wind': 12}]
+#
+
+Одна из популярных функцию в itertools функция islice которая работает как срез
+
+
+even_numbers = itertools.count(0, 2)
+print([x for x in range(20) if x % 2 == 0]) 
+
+print(list(itertools.islice(even_numbers, 2, 10, 2)))
+
+# вывод
+[0, 2, 4, 6, 8, 10, 12, 14, 16, 18]
+[4, 8, 12, 16]
+#
+
+То есть мы взяли со второго элемента по 10ый элемент с шагом 2
+
+Если передать токо один аргумент то выведется нужное количество элементов
+
+even_numbers = itertools.count(0, 2)
+print(list(itertools.islice(even_numbers, 4)))
+# [0, 2, 4, 6]
+
+Есть функция которая помогает получить все перестановки
+
+pin = [7, 5, 2, 8]
+print(list(itertools.permutations(pin)))
+
+[(7, 5, 2, 8), (7, 5, 8, 2), (7, 2, 5, 8), (7, 2, 8, 5), (7, 8, 5, 2), (7, 8, 2, 5), (5, 7, 2, 8), 
+(5, 7, 8, 2), (5, 2, 7, 8), (5, 2, 8, 7), (5, 8, 7, 2), (5, 8, 2, 7), (2, 7, 5, 8), (2, 7, 8, 5), 
+(2, 5, 7, 8), (2, 5, 8, 7), (2, 8, 7, 5), (2, 8, 5, 7), (8, 7, 5, 2), (8, 7, 2, 5), (8, 5, 7, 2), 
+(8, 5, 2, 7), (8, 2, 7, 5), (8, 2, 5, 7)]
+
+А сейчас давайте попробуем сгенерировать колоду карт и поможет в этом функция product
+
+ranks = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+suits = ['H', 'D', 'C', 'S']
+
+lst = list(itertools.product(ranks, suits))
+print(lst)
+# [('6', 'H'), ('6', 'D'), ('6', 'C'), ('6', 'S'), ('7', 'H'), ('7', 'D'), ('7', 'C'), ('7', 'S'), ('8', 'H'), 
+('8', 'D'), ('8', 'C'), ('8', 'S'), ('9', 'H'), ('9', 'D'), ('9', 'C'), ('9', 'S'), ('10', 'H'), 
+('10', 'D'), ('10', 'C'), ('10', 'S'), ('J', 'H'), ('J', 'D'), ('J', 'C'), ('J', 'S'), ('Q', 'H'), 
+('Q', 'D'), ('Q', 'C'), ('Q', 'S'), ('K', 'H'), ('K', 'D'), ('K', 'C'), ('K', 'S'), ('A', 'H'), 
+('A', 'D'), ('A', 'C'), ('A', 'S')]
+
+А давайте решим задачу и найдём всевозможные комбинации двух карт
+
+print(list(itertools.combinations(lst, 2)))
+
+# Вывод
+# Очень большой список
+[(('6', 'H'), ('6', 'D')), (('6', 'H'), ('6', 'C')), ...
+...
+#
+
+

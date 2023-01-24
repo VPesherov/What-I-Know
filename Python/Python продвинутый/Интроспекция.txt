@@ -1,3 +1,51 @@
 Интроспекция - это такой механизм который позволяет анализировать данные об объектах.
 Это нужно например чтоб изучить состояние объекта.
 
+Начнём с того что мы можем вызвать метод __doc__ и узнать информацию
+
+print(issubclass.__doc__)
+
+# Вывод
+Return whether 'cls' is derived from another class or is the same class.
+
+A tuple, as in ``issubclass(x, (A, B, ...))``, may be given as the target to
+check against. This is equivalent to ``issubclass(x, A) or issubclass(x, B)
+or ...``.
+#
+
+или help который работает схожим образом
+
+help(issubclass)
+
+# Вывод
+Help on built-in function issubclass in module builtins:
+
+issubclass(cls, class_or_tuple, /)
+    Return whether 'cls' is derived from another class or is the same class.
+    
+    A tuple, as in ``issubclass(x, (A, B, ...))``, may be given as the target to
+    check against. This is equivalent to ``issubclass(x, A) or issubclass(x, B)
+    or ...``.
+#
+
+Создадим простой класс
+
+class Shape:
+    pass
+
+
+class Circle(Shape):
+
+    def __init__(self, radius):
+        self.radius = radius
+
+
+circle = Circle(10)
+print(issubclass(Circle, Shape)) # True
+print(isinstance(circle, Circle)) # True
+
+Проверка на принадлежность это один из простейших примеров интроспекции
+
+
+
+
