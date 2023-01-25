@@ -1,0 +1,103 @@
+Следующая проблема:
+Допустим мы хотим поработать с файлом и во второй аргумент забрался какой-то ненужный параметр
+или другой разработчик не знал что с этим файлом лучше работать только в режиме r
+
+f = open(r'easy_password.txt', 'v')
+
+Напишем следующим код
+
+from typing import Literal
+
+
+def open_file(file, mode: Literal['r', 'w']): # теперь сюда желательно передавать только режим r или w
+    pass
+
+
+open_file(r'easy_password.txt', 'rw') # pycharm подкрасит 'rw' и подскажет что нужно r или w
+
+Далее рассмотрим возможность Final
+Что это такое?
+Этот инструмент помогает подсказать что это значение какое-то константное и лучше его не менять, например нам нужно число pi
+
+from typing import Final
+
+pi: Final = 3.14
+
+и изменим его
+
+pi = 5 # pycharm подскажет что так лучше не делать
+
+Существует ещё декоратор final для классов который запрещает наследоваться от класса
+разберём пример
+
+class Dog:
+    def __init__(self):
+        self.paws = 4
+        self.health = 100
+        self.sound = 'woof-woof'
+
+    def bark(self):
+        print(self.sound)
+
+
+class SuperDog(Dog):
+    def __init__(self):
+        super().__init__()
+        self.health = 200
+        self.sound = 'super-woof'
+
+
+dog = SuperDog()
+print(dog.health) # 200
+dog.bark() # super-woof
+
+Всё нормально, но теперь навесим декоратор @final
+
+from typing import final
+
+
+@final
+class Dog:
+    def __init__(self):
+        self.paws = 4
+        self.health = 100
+        self.sound = 'woof-woof'
+
+    def bark(self):
+        print(self.sound)
+
+
+class SuperDog(Dog): # и теперь тут будет подсвечено что лучше не наследоваться от этого класса
+    def __init__(self):
+        super().__init__()
+        self.health = 200
+        self.sound = 'super-woof'
+
+Код конечно же отработает, так как питон не запрещает наследоваться, а лишь предупреждает что лучше так не делать
+
+dog = SuperDog() 
+print(dog.health) # 200
+dog.bark() # super-woof
+
+Далее посмотрим работу со словарями 
+
+from typing import Dict
+
+тут всё ок так как ключи у нас являются строками и значения тоже
+
+person: Dict[str, str] = {'name': 'John', 'last_name': 'Smith', 'sex': 'm'}
+
+но если вдруг мы хотим чтоб у нас были и другие значения в значениях?
+мы можем сделать это с помощью any
+
+dict_result: Dict[str, any] = {'name': 'John', 'last_name': 'Smith', 'sex': 'm', 'age': 19} # ничего не подчёркивает
+
+
+
+
+
+
+
+
+
+
