@@ -10,7 +10,7 @@ shift + tab - Убрать лишние табы
 
 Alt + Enter - посмотреть помощь от pycharm
 
-Ctrl + Shift + Enter - перейти на следующую строку откуда угодно
+Ctrl + Shift + Enter - перейти на следующую строку откуда угодно и поставит :
 
 #Остальные клавиши
 http://dev-tricks.ru/2016/10/20/goryachie-klavishi-pycharm
