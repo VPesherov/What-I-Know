@@ -1,0 +1,22 @@
+Раньше мы делали следующее
+
+full_name = 'John Smith'
+print(f'full_name={full_name}') # full_name=John Smith
+
+Теперь можно сделать проще и даже красивее
+print(f'{full_name=}') # full_name='John Smith'
+
+и даже с пробелами
+
+print(f'{full_name = }') # full_name = 'John Smith'
+
+или даже использовать срез
+
+print(f'{full_name[5:] = }') # full_name[5:] = 'Smith'
+
+или выравнивание 
+
+print(f'{full_name = :>15}') # full_name =      John Smith
+
+
+
