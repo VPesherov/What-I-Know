@@ -23,3 +23,9 @@ git config --global core.autocrlf true
 git config --global core.safecrlf warn
 
 git config --global core.quotepath off
+
+Для удобного отображение веток используется следующая команда
+
+git config --global init.defaultBranch main
+
+
