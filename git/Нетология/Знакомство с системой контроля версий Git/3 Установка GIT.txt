@@ -1,0 +1,8 @@
+Для установки GIT на windows - переходим по следующей ссылке
+
+https://git-scm.com/download/win
+
+Как конкретно установить и с какими настройками смотрим в видосе
+
+https://netology.ru/profile/program/git-70/lessons/262512/lesson_items/1402778
+

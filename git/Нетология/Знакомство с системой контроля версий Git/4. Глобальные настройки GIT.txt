@@ -1,0 +1,25 @@
+Первую комманду которую нам надо ввести - это 
+git config --global user.name ""
+
+В ковычках нужно указать имя которое будет использоваться.
+
+git config --global user.email ""
+
+В ковычках пишем email
+
+Данный email и данный никнейм будет отображаться в подписях к изменениям
+
+Для проверки настроек можно ввести команду
+
+git config --global --list
+
+Выведутся наши настройки
+
+Для настройки вывода строк используем следующие команды
+(Это поможет видеть русские буквы и адекватные директории)
+
+git config --global core.autocrlf true
+
+git config --global core.safecrlf warn
+
+git config --global core.quotepath off
