@@ -1,0 +1,74 @@
+﻿Типы переменных можно увидеть на рисунке 2.
+
+Sub testSub()
+    'BASIC VARIABLE
+    'Для текста
+    Dim someText As String
+    'Для чисел
+    Dim someNumber As Long
+    'Для даты
+    Dim someDate As Date
+    
+    someText = "Тестовая информация"
+    someNumber = 100
+    'Дата задаётся в формате ДД.ММ.ГГГГ
+    someDate = "19.09.2022"
+    
+    MsgBox someText
+    
+    'OBJECT VARIABLE
+    'Для книг
+    Dim someWorkbook As Workbook
+    'Для рабочих листов
+    Dim someWorksheet As Worksheet
+    'Для областей
+    Dim someRange As Range
+    
+    'Записываем в переменную someWorkbook значание данной книги
+    Set someWorkbook = ThisWorkbook
+    
+    'Выводим атрибут name данной книги, то есть в результате мы должны получить имя книги, которую используем
+    MsgBox someWorkbook.Name
+    
+    'Зададим значения нашим переменным
+    Set someWorksheet = Worksheets("Лист1")
+    Set someRange = Range("C3")
+    
+    'И обратимся к атрибутам данных переменных
+    MsgBox someWorksheet.Name
+    MsgBox someRange.Address
+    
+End Sub
+
+В данном фрагменте кода символа апострофа ' - обозначает комментарий
+В данном коде приводятся примеры BASIC VARIABLE и OBJECT VARIABLE
+И как мы их объявляем, затем мы можем использовать переменные и их атрибуты
+Например объявив переменную someWoorkbook и записав в неё значение данной книги - мы можем обратиться к атрибуту Name и узнать
+её имя. Аналогично и с другими переменными типа OBJECT VARIABLE
+
+Также мы конечно же можем использовать математические действия
+
+MsgBox 50 + 50
+
+Или использовать нашу переменную
+
+MsgBox 50 + someNumber
+
+Заведём новую переменную и запишем в неё результат математических действий и затем выведем его.
+
+Dim someSecondNumber As Long    
+
+someSecondNumber = someNumber / 3
+
+MsgBox someSecondNumber
+
+Для соединения с текстом мы можем использовать символ конкатенации &
+
+Dim someSecondNumber As Long
+    
+someSecondNumber = someNumber / 3
+    
+MsgBox someSecondNumber & " - результат деления"
+
+
+

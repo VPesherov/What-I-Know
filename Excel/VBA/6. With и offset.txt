@@ -1,0 +1,40 @@
+with - интрумент, который помогает прописывать повторяющиюся часть кода.
+например, чтоб вставить в какие-то ячейки значения нам нужно повторять данный код
+
+ThisWorkbook.Worksheets(1).Range("A1") = 1
+ThisWorkbook.Worksheets(1).Range("A2") = 2
+ThisWorkbook.Worksheets(1).Range("A3") = 3
+
+С оператором with это превращается в такой код
+
+Sub cellsInVBA()
+    
+    With ThisWorkbook.Worksheets(1)
+        .Range("A1") = 1
+        .Range("A2") = 2
+        .Range("A3") = 3
+    End With
+    
+End Sub
+
+offset - инструмент, который позволяет свдигаться от данной ячейки
+
+ThisWorkbook.Worksheets(1).Range("A1").Offset(1, 0) = 11
+
+Первое значение offset(1, 0) это сдвиг по строке, а второе по столбцу
+Также можно использовать отрицательные значения, чтоб сдвигаться вверх и влево
+
+Ещё один хороший пример использования with
+
+Sub cellsInVBA()
+    
+    With ThisWorkbook.Worksheets(1).Range("A1")
+        .Font.Bold = True
+        .Font.Color = vbRed
+        .Value = 300
+    End With
+       
+End Sub
+
+То есть условно заредактировать какую-то ячейку или даже список ячеек будет удобно
+

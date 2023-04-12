@@ -1,0 +1,63 @@
+Мы познакомимся с объектом cells
+
+По иерархическому уровню с рисунка 4, он находится на одном уровне с Range
+В отличии от Range в cells мы даём два параметра
+
+Cells(1, 1)
+
+Где первый аргумент это строка - вторая столбец.
+То есть по сути Range("A1") = Cells(1, 1)
+
+Теперь попробуем какой-нибудь ячейки присвоить значение по индексу
+
+Sub cellsInVBA()
+    ThisWorkbook.Worksheets(1).Cells(4, 3) = "Test"
+End Sub
+
+увидем что я в ячейку C4 записалась строка Test
+
+Теперь попробуем взять значение из ячейки и запишем его в переменную
+Запишем в ячейки A1 и B1 значения 3 и 4
+Напишем такой код
+
+Sub cellsInVBA()
+    Dim rowIndex As Long
+    Dim columnIndex As Long
+    
+    rowIndex = ThisWorkbook.Worksheets(1).Cells(1, 1)
+    columnIndex = ThisWorkbook.Worksheets(1).Cells(1, 2)
+    
+    MsgBox rowIndex & " " & columnIndex
+    
+End Sub
+
+В ответ выведется 3 4, всё верно
+и теперь получив индексы в виде переменных - мы можем использовать их в другом месте, например поместим слово Тест по rowIndex
+и columnIndex.
+
+Sub cellsInVBA()
+    Dim rowIndex As Long
+    Dim columnIndex As Long
+    
+    rowIndex = ThisWorkbook.Worksheets(1).Cells(1, 1)
+    columnIndex = ThisWorkbook.Worksheets(1).Cells(1, 2)
+    
+    ThisWorkbook.Worksheets(1).Cells(rowIndex, columnIndex) = "Тест"
+    
+End Sub
+
+И получим что в ячейке D3 лежит значение Тест
+
+Но теперь мы можем комбинировать методы cells и range, например
+
+Sub cellsInVBA()
+    ThisWorkbook.Worksheets(1).Range(Cells(1, 1), Cells(3, 4)) = 5
+    
+End Sub
+
+Теперь с ячейки 1 1 по 3 4 будут присвоены 5
+
+
+
+
+
