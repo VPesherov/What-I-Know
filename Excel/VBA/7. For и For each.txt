@@ -50,4 +50,5 @@ Sub testSub2()
     
 End Sub
 
+Прокрутим в цикле for each названия листов
 
