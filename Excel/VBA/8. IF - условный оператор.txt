@@ -1,0 +1,17 @@
+Синтаксис условного оператора выглядит следующим образом
+
+Sub testSub()
+    If Range("B3") = 3 Then
+        MsgBox "Три"
+    End If
+End Sub
+
+Для не равно используется символ знаков больше меньше 
+<>
+
+Sub testSub()
+    If Range("B3") <> 3 Then
+        MsgBox "Не три"
+    End If
+End Sub
+
