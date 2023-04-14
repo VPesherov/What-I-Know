@@ -26,6 +26,8 @@ origin  git@github.com:VPesherov/test.git (push)
 Для этого нужна команда
 git push -u origin main
 
+Если не работает то скорее всего нужно ввести команду git branch -M main
+
 Если что-то пошло не по плану, значит нужно попробовать пересоздать ssh ключ
 Если успешно выведется что-то типо этого
 Branch 'main' set up to track remote branch 'main' from 'origin'.
