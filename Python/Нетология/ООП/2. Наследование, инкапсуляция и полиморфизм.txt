@@ -471,5 +471,31 @@ peter_parker.attack(enemy)
 print(enemy.health) # 90
 print(enemy.status) # Ошибка так как атрибут status не создался
 
+А как нам вызвать нужный метод? Или даже оба метода сразу? Давайте попробуем
+Для этого мы можем обратиться следующим способом
+
+class SpiderMan(Character, Spider):
+    def __init__(self, name, power, energy=50, hands=8):
+        super().__init__(name, power)
+        self.backpack = []
+
+    def turn_spider_sense(self):
+        self.energy -= 10
+        self.power += 20
+
+    def webshoot(self):
+        if 'web' in self.backpack:
+            super().webshoot()
+        else:
+            print('No web!')
+
+    def move(self):
+        self.webshoot()
+        print('Moving on 3 square')
+
+    def attack(self, foe): # добавляем свой метод атаки
+        super().attack(foe) # вызываем атаку, которая первая по иерархии классов 
+        Spider.attack(self, foe) # вызывает атаку из класса Spider, но теперь мы обязательно передаём ещё и self
+
 
 
