@@ -1,0 +1,475 @@
+Инкапсуляция - это свойство системы, позволяющее объединить данные и методы, работающие с ними в классе, и скрыть
+детали реализации.
+Для ограничения некоторого доступа во внутрь программы - в Python да и во многих других языках программирования
+используются модификаторы доступа(Рисунок 7)
+
+Есть три модификатора доступа в Python:
+
+public
+__private
+_protected
+
+public - доступ открыт из любой точки программы вне класса
+__private - доступ имеется только внутри данного класса
+_protected - доступ имеется у самого класса и у дочерних классов
+
+Но работают они только на словах.
+Разберёмся на примерах, возьмём класс из прошлого урока:
+
+class Character:
+
+    def __init__(self, name, power, energy=100, hands=2):
+        self.name = name
+        self.power = power
+        self.energy = energy
+        self._backpack = []  # сделаем тут _protected
+        self.hands = hands
+
+    def eat(self, food):
+        if self.energy < 100:
+            self.energy += food
+        else:
+            print('No hungry')
+
+    def do_exercise(self, hours):
+        if self.energy > 0:
+            self.energy -= hours * 2
+            self.power += hours * 2
+        else:
+            print('Too tired')
+
+    def _change_alias(self, new_alias): # и защищённый метод
+        self.alias = new_alias
+
+    def beat_up(self, foe):
+        if not isinstance(foe, Character):
+            return
+        if foe.power < self.power:
+            foe.status = 'defeated'
+            self.status = 'winner'
+        else:
+            print('Retreat!')
+
+И попробуем вызвать наши _protected атрибуты
+
+peter = Character('Peter Parker', 80)
+peter._change_alias('Spider-Man')
+print(peter.alias) 
+print(peter._backpack)
+
+# Вывод:
+
+Spider-Man
+[]
+
+По итогу всё вывелось, хотя мы всё защитили, в чём дело? Да просто в python не реализована концепция инкапсуляции. И это
+по факту просто стилистическое соглашение. И типо подчёркивание снизу даёт понять другому программисту о том, что лучше
+не использовать этот метод или атрибут где-то ещё, кроме как внутри данных классов и наследников.
+
+Но если изменить атрибуты на полностью защищённые (protected)
+
+class Character:
+
+    def __init__(self, name, power, energy=100, hands=2):
+        self.name = name
+        self.power = power
+        self.energy = energy
+        self.__backpack = []  # protected
+        self.hands = hands
+
+    def eat(self, food):
+        if self.energy < 100:
+            self.energy += food
+        else:
+            print('No hungry')
+
+    def do_exercise(self, hours):
+        if self.energy > 0:
+            self.energy -= hours * 2
+            self.power += hours * 2
+        else:
+            print('Too tired')
+
+    def __change_alias(self, new_alias): # protected
+        self.alias = new_alias
+
+    def beat_up(self, foe):
+        if not isinstance(foe, Character):
+            return
+        if foe.power < self.power:
+            foe.status = 'defeated'
+            self.status = 'winner'
+        else:
+            print('Retreat!')
+
+
+peter = Character('Peter Parker', 80)
+peter._change_alias('Spider-Man')
+print(peter.alias)
+print(peter._backpack)
+
+То наш код уже не сработает и будет ошибка, но и эту ошибку можно обойти при большом желании.
+Если мы воспользуемся следующим кодом
+
+print(dir(Character))
+
+['_Character__change_alias', '__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', 
+'__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', 
+'__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', 
+'__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', 'beat_up', 'do_exercise', 'eat']
+
+Мы увидим, что наш метод то на самом деле есть, но спрятан то есть к нему всё же можно обратиться и давайте разберёмся
+как
+
+peter = Character('Peter Parker', 80)
+peter._Character__change_alias('Spider-Man')
+print(peter.alias)
+print(peter._Character__backpack)
+
+# Вывод
+
+Spider-Man
+[]
+
+Всё работает, то есть можно при большом желании обратиться и к защищённому атрибуту. То есть можно сделать вывод, что
+инкапсуляция в Python не работает вообще. Эти модификаторы просто нужны для стилистического обозначения.
+
+Следующий принцип ООП - это Наследование
+Наследование - это свойство системы, позволяющее описать новый класс на основе уже существующего с частично или полностью 
+заимствованной функциональностью.
+Как это примерно выглядит можно увидеть на Рисунке 8
+
+Также есть такое понятие как множественное наследование, как это выглядит можно увидеть на Рисунке 9.
+Как устроена иерархия классов в Python - можно увидеть на Рисунке 10.
+Их важно правильно иерархировать, потому что может например случится такой конфликт при котором у родительского и дочернего
+класса методы по названию будут совпадать - такое часто бывает на практике когда методы очень похожи по реализации, но
+в зависимости от дочернего или родительского класса немного отличаются.
+И разобраться в правильной иерархии нам поможет порядок под названием MRO.
+Разберёмся во всём этом на примере кода
+
+class Character:
+    name = ''
+    power = 0
+    energy = 100
+    hands = 2
+
+
+class Spider:
+    power = 0
+    energy = 50
+    hands = 8
+
+    def webshoot(self):
+        print('Pew-Pew!')
+
+
+class SpiderMan(Character, Spider): # класс наследуется от Character и Spider
+    pass
+
+
+peter_parker = SpiderMan()
+print(peter_parker.name) # ''
+print(peter_parker.power) # 0
+print(peter_parker.energy) # 100
+print(peter_parker.hands) # 2
+peter_parker.webshoot() # Pew-Pew!
+
+Чтоб посмотреть порядок наследования - нужно вызвать специальный метод
+print(SpiderMan.mro())
+
+# Вывод
+
+[<class '__main__.SpiderMan'>, <class '__main__.Character'>, <class '__main__.Spider'>, <class 'object'>]
+
+Теперь попробуем наследовать магический метод, наприме __init__
+
+class Character:
+    def __init__(self, name, power, energy=100, hands=2):
+        self.name = name
+        self.power = power
+        self.energy = energy
+        self.hands = hands
+
+
+class Spider:
+
+    def __init__(self, power, energy=50, hands=8):
+        self.power = power
+        self.energy = energy
+        self.hands = hands
+
+    def webshoot(self):
+        print('Pew-Pew!')
+
+
+class SpiderMan(Character, Spider):
+    def turn_spider_sense(self):
+        self.energy -= 10
+        self.power += 20
+
+
+peter_parker = SpiderMan('Peter Parker', 80) # мы создаём экземпляр класса SpiderMan и передаём ему параметры, то
+					     # __init__ возьмётся из родительских методов
+print(peter_parker.name) # 'Peter Parker'
+print(peter_parker.power) # 80
+print(peter_parker.energy) # 100
+print(peter_parker.hands) # 2
+peter_parker.turn_spider_sense()
+print(peter_parker.energy) # 90
+print(peter_parker.power) # 100
+
+Ко всему этому прикрутим ещё одно понятие ООП - полиморфизм (Рисунок 11)
+Полиморфизм - это свойство системы использовать объекты с одинаковым интерфейсом без информации о типе и внутренней
+структуре объекта.
+
+Поразбираемся на примерах
+
+class Character:
+    def __init__(self, name, power, energy=100, hands=2):
+        self.name = name
+        self.power = power
+        self.energy = energy
+        self.hands = hands
+
+    def move(self): # добавили метод move
+        print('Changing position')
+
+
+class Spider:
+
+    def __init__(self, power, energy=50, hands=8):
+        self.power = power
+        self.energy = energy
+        self.hands = hands
+
+    def webshoot(self):
+        print('Pew-Pew!')
+
+    def move(self): # и добавили метод move сюда
+        self.webshoot()
+        print('Changing position')
+
+
+class SpiderMan(Character, Spider):
+    def turn_spider_sense(self):
+        self.energy -= 10
+        self.power += 20
+
+
+peter_parker = SpiderMan('Peter Parker', 80)
+peter_parker.move() # Changing position
+
+И тут мы видим, что метод move() по разному применяется в разных классах - это и есть полиморфизм
+
+class Character:
+    def __init__(self, name, power, energy=100, hands=2):
+        self.name = name
+        self.power = power
+        self.energy = energy
+        self.hands = hands
+
+    def move(self):
+        print('Changing position')
+
+
+class Spider:
+
+    def __init__(self, power, energy=50, hands=8):
+        self.power = power
+        self.energy = energy
+        self.hands = hands
+
+    def webshoot(self):
+        print('Pew-Pew!')
+
+    def move(self):
+        self.webshoot()
+        print('Changing position')
+
+
+class SpiderMan(Character, Spider):
+    def turn_spider_sense(self):
+        self.energy -= 10
+        self.power += 20
+
+    def move(self): # добавим и сюда метод move
+        self.webshoot()
+        print('Moving on 3 square')
+
+peter_parker = SpiderMan('Peter Parker', 80)
+peter_parker.move() 
+
+# Вывод
+Pew-Pew!
+Moving on 3 square
+
+Объявим в нашем классе SpiderMan метод __init__
+
+class SpiderMan(Character, Spider):
+    def __init__(self, name, power, energy=50, hands=8):
+        self.name = name
+        self.power = power
+        self.energy = energy
+        self.hands = hands
+        self.backpack = []
+
+    def turn_spider_sense(self):
+        self.energy -= 10
+        self.power += 20
+
+    def move(self):
+        self.webshoot()
+        print('Moving on 3 square')
+
+Задача следующая: у нас должна быть инициализация как у Character, но рюкзак был именно у SpiderMan, поэтому его нельзя
+добавлять в __init__ в классе Character
+Можно ли сделать так как мы сделали это выше? Да можно, но это не самый оптимальный вариант, потому что у нас идёт
+повторение практически одного и того же кода
+Этого:
+
+    def __init__(self, name, power, energy=100, hands=2):
+        self.name = name
+        self.power = power
+        self.energy = energy
+        self.hands = hands
+
+И вот этого:
+
+    def __init__(self, name, power, energy=50, hands=8):
+        self.name = name
+        self.power = power
+        self.energy = energy
+        self.hands = hands
+        self.backpack = []
+
+Меняется только одна строчка и что же нам делать? Для этого - нам подойдёт функция super()
+Теперь наш __init__ будет выглядеть так
+
+Class SpiderMan(Character, Spider)
+    def __init__(self, name, power, energy=50, hands=8):
+        super().__init__(name, power)
+        self.backpack = []
+
+С помощью слова super() - мы говорим программе, попробуй воспользоваться методом родительского классе.
+
+Теперь пойдём дальше:
+Напишем логику, которая даёт возможность нашему SpiderMan - стрелять паутиной, но будем проверять, а если ли у него
+сама паутина?
+
+class SpiderMan(Character, Spider):
+    def __init__(self, name, power, energy=50, hands=8):
+        super().__init__(name, power)
+        self.backpack = []
+
+    def turn_spider_sense(self):
+        self.energy -= 10
+        self.power += 20
+
+    def webshoot(self):
+        if 'web' in self.backpack:
+            self.webshoot()
+        else:
+            print('No web!')
+
+    def move(self):
+        self.webshoot()
+        print('Moving on 3 square')
+
+
+peter_parker = SpiderMan('Peter Parker', 80)
+peter_parker.webshoot()
+peter_parker.backpack.append('web')
+peter_parker.webshoot()
+
+Попробуйте подумать, что будет если написать такой код, в первом вызове webshoot() он просто выведет No web
+А при втором?
+
+...
+
+Ответ:
+Он зациклиться(рекурсия) - так как паутина у него теперь всегда есть и он всегда будет вызывать метод webshoot()
+Что бы это исправить можно вызвать этот метод у родителя.
+То есть снова используем super()
+
+    def webshoot(self):
+        if 'web' in self.backpack:
+            super().webshoot()
+        else:
+            print('No web!')
+
+Теперь проверим
+
+peter_parker = SpiderMan('Peter Parker', 80)
+peter_parker.webshoot() # No web!
+peter_parker.backpack.append('web')
+peter_parker.webshoot() # Pew-Pew!
+
+Всё починилось
+
+Теперь появляется следующий вопрос:
+Можем ли наследовать что-то не от родителя по mro, а от другого родителя?
+Да можем.
+Посмотрим на следующий код
+
+class Character:
+    def __init__(self, name, power, energy=100, hands=2):
+        self.name = name
+        self.power = power
+        self.energy = energy
+        self.hands = hands
+
+    def move(self):
+        print('Changing position')
+
+    def attack(self, foe): # отнимает от атрибута health 10
+        foe.health -= 10
+
+
+class Spider:
+
+    def __init__(self, power, energy=50, hands=8):
+        self.power = power
+        self.energy = energy
+        self.hands = hands
+
+    def webshoot(self):
+        print('Pew-Pew!')
+
+    def move(self):
+        self.webshoot()
+        print('Changing position')
+
+    def attack(self, foe): # данный метод attack создаёт атрибут status
+        foe.status = 'stunned'
+
+
+class SpiderMan(Character, Spider):
+    def __init__(self, name, power, energy=50, hands=8):
+        super().__init__(name, power)
+        self.backpack = []
+
+    def turn_spider_sense(self):
+        self.energy -= 10
+        self.power += 20
+
+    def webshoot(self):
+        if 'web' in self.backpack:
+            super().webshoot()
+        else:
+            print('No web!')
+
+    def move(self):
+        self.webshoot()
+        print('Moving on 3 square')
+
+peter_parker = SpiderMan('Peter Parker', 80)
+enemy = Character('Some Enemy', 10)
+enemy.health = 100
+
+peter_parker.attack(enemy)
+
+print(enemy.health) # 90
+print(enemy.status) # Ошибка так как атрибут status не создался
+
+
+
