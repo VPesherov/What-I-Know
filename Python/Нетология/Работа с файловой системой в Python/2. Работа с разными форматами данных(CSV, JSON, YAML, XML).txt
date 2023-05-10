@@ -180,3 +180,136 @@ with open('files/newsafr.csv', 'rt', encoding='UTF-8') as file: # открыва
             writer.writerow(row) # построчно записываем
 
 
+Теперь поработаем с JSON форматом
+JSON формат очень напоминает питоновскую комбинацию из словарей из списков, который в друг друга вложены. Рисунок 4.
+Для чего нужны JSON форматы - можно увидеть на Рисунке 5.
+Как работать с JSON можно увидеть на Рисунке 6.
+Поработаем на практике:
+
+import json
+
+with open('files/newsafr.json', encoding='UTF-8', newline="") as f: # открыли наш json файл
+    json_data = json.load(f) # сохранили все его данные в переменную
+
+print(type(json_data), json_data) # и посмотрим его тип и что в нём хранится
+
+# Вывод
+
+<class 'dict'> {'rss': {'_xmlns:votpusk': 'https://www.votpusk.ru/news.asp', '_version': '2.0', # и тд
+
+Видем, что у нас сохранилось всё в словарь, а также словарь и находится в данной переменной
+
+Теперь попробуем выполнить следующую задачу: вывести и посчитать все ключи 'title' в данном json файле
+Для этого нужно изучить путь к ключу 'title' и последовательно доставать его
+
+import json
+
+with open('files/newsafr.json', encoding='UTF-8', newline="") as f:
+    json_data = json.load(f)
+
+print(type(json_data)) # type dict
+print(new_list := json_data['rss']['channel']['items']) # на данном уровне у нас находится 'title' и мы записали все
+							# 'title' в список и он вывелся благодаря моржовому оператору
+print(len(new_list)) # 40
+
+И теперь в массиве мы можем перебрать эти title
+
+for news in news_list:
+    print(news['title'])
+
+# Вывод 
+
+Израильский турист погиб в ДТП в Африке
+Ростуризм просит турбизнес сообщать людям о риске заражения в Африке
+Открытие сафари кемпа Belmond Eagle Island Lodge в Ботсване после реновации
+...
+# и тд
+
+Чтоб сохранить данные как json файл воспользуемся следующий кодом
+
+import json
+
+with open('files/newsafr.json', encoding='UTF-8', newline="") as f: # откроем json файл с данными
+    json_data = json.load(f) # считаем данные
+
+with open('files/newsafr2.json', 'w', encoding='utf-8', newline="") as f: # откроем файл newsafr2 на запись
+    json.dump(json_data, f) # запишем туда json файл
+
+Итого в файле будет следующие данные:
+
+{"rss": {"_xmlns:votpusk": "https://www.votpusk.ru/news.asp", "_version": "2.0", "channel": 
+{"description": "\u0410\u0444
+...
+# и тд
+
+Тут мы видим странные символы \u0410\u0444 хотя в изначальном файле их не было, это такое восприятие у русского языка.
+Мы всё равно сможем считывать эти данные в Python и работать с ними, и Python будет выводить их нормальными буквами, но
+оставлять так это не дело, для этого нам поможет следующая настройка
+
+with open('files/newsafr2.json', 'w', encoding='utf-8', newline="") as f:
+    json.dump(json_data, f, ensure_ascii=False) # ставим настройку ensure_ascii=False
+
+Теперь у нас в выходном файле будет нормальный русский язык. Одну проблему исправили, но с точкий зрения читаемости, там
+всё как одна большая строка, было бы классно если было бы что-то по аналогии с pprint в Python
+и такая штука есть, нам нужен параметр indent
+
+with open('files/newsafr2.json', 'w', encoding='utf-8', newline="") as f:
+    json.dump(json_data, f, ensure_ascii=False, indent=2) # ставим indent=2 и 2 будет означать, что будет два проблема
+							# у каждого ключа
+
+И теперь выходной файл будет выглядеть так:
+
+{
+  "rss": {
+    "_xmlns:votpusk": "https://www.votpusk.ru/news.asp",
+    "_version": "2.0",
+    "channel": {
+
+Выглядит намного лучше, но на самом деле эти отступы нужны только нам для читаемости, самому Python - они не нужны и 
+можно без них работать.
+
+Теперь посмотрим как нам работать с JSON как со строкой
+
+import json
+
+with open('files/newsafr.json', encoding='UTF-8', newline="") as f: # вновь открываем файл для чтения
+    json_data = json.load(f) # считываем данеые как словарь
+
+json_str = json.dumps(json_data) # затем переводим наши данные из словаря в строку
+# тут важное примечание - если попробовать сразу из файла в строку, то будет ошибка, поэтому
+# мы делаем дополнительное действие как считывание данные в словарь
+
+print(json_str) # выведет снова json файл, но с непонятной кириллицей \u0444\u0435
+print(type(json_str)) # <class 'str'>
+
+Чтоб исправить кириллицу нужно вновь прописать параметр
+
+json_str = json.dumps(json_data, ensure_ascii=False)
+
+print(json_str)
+теперь всё будет окей
+
+Теперь попробуем сохранить нашу строку в json файл
+
+#открываем и считываем наши данные
+with open('files/newsafr.json', encoding='UTF-8', newline="") as f: 
+    json_data = json.load(f)
+
+json_str = json.dumps(json_data, ensure_ascii=False)
+
+# записываем наши данные в переменную с помощью json.loads и передаём нашу строку
+json_data2 = json.loads(json_str) 
+print(type(json_data2)) # увидем тип 'dict'
+
+И готово, теперь мы можем вновь его обрабатывать и зписывать
+
+Перейдём к следующему формату - YAML
+YAML - выглядит примерно так:
+
+rss:
+  _version: '2.0'
+  _xmlns:votpusk: https://www.votpusk.ru/news.asp
+  channel:
+    category: Туризм - Африка
+
+Как он выглядит можно увидеть на Рисунке 7
