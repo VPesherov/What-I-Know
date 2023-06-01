@@ -225,7 +225,7 @@ https://yandex.ru/dev/disk/rest/
 Перейдём в полигон, а затем создадим токен
 В данном случае примерно вот такой
 
-y0_AgAAAABguimRAWwAAAADjXzD3wXKOVhBcRrO3aLzL_YM8HW7XDn
+y0_AgAAAABguimRAWw
 
 Как примерно я работал
 Описано тут
