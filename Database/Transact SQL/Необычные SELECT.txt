@@ -1,0 +1,8 @@
+SELECT Name AS Имя FROM myTable # Даст столбцу Name имя Имя
+
+SELECT N'Товар мой' AS Статус FROM myTable # Создаст колонку Статус 
+# и заполнит значениями N'Товар мой'
+
+SELECT $IDENTITY FROM myTable # Выведет столбцы которые имеют тип IDENTITY
+
+SELECT first_name AS [Первое имя] FROM myTable # Если в псевдониме содержится пробел то берём в []
