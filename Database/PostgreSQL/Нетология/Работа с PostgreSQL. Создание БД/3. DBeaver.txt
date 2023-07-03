@@ -1,0 +1,3 @@
+Установка DBeaver
+https://github.com/netology-code/sqlpy-code/blob/main/02/DBeaver.md
+

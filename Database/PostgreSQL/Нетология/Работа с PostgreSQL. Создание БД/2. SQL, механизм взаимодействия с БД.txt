@@ -1,0 +1,44 @@
+Типы запросов SQL можно посмотреть на Рисунке 1.
+Чтоб создать таблицу - нужно воспользоваться словами
+
+CREATE TABLE Student (
+	id serial PRIMARY KEY,
+	name varchar(40) NOT NULL,
+	GPA real CHECK(GPA > 0)
+)
+
+Всё идёт по одному синтаксису - создаём таблицу и даём её название
+Затем в скобках перечисляем название столбиков, тип, и ограничения.
+Все типы можно увидеть на Рисунке 2.
+Список некоторых ограничений можно увидеть на Рисунке 3.
+
+Создадим таблицу в postgres
+Подключаемся к нужной БД, где хотим создать таблицу
+
+psql -U postgres -d test
+
+И пишем:
+CREATE TABLE student (id SERIAL PRIMARY KEY,  name VARCHAR(60) NOT NULL);
+
+!!! Обязательно в конце точка с запятой
+
+Если ввести команду ещё раз - то получим ошибку.
+Для избежания ошибки в нашу команду нужно добавить фразу IS NOT EXISTS
+
+CREATE TABLE IF NOT EXISTS student (id SERIAL PRIMARY KEY,  name VARCHAR(60) NOT NULL);
+
+Если нам нужно изменить столбик то выполняем следующую команду.
+
+ALTER TABLE student 
+
+и например изменить имя
+
+ALTER TABLE student RENAME name TO first_name;
+
+Чтоб удалить нашу таблицу пользуемся следующей командой
+
+DROP TABLE student;
+
+
+
+
