@@ -1,0 +1,4 @@
+Sub DeleteRowIfCellBlank()
+On Error Resume Next
+Columns("A").SpecialCells(xlCellTypeBlanks).EntireRow.Delete
+End Sub
