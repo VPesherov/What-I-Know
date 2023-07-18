@@ -25,7 +25,7 @@ hw2 = Homework(number=2, description='дз2', course=course1)
 
 session.add_all([hw1, hw2])
 session.commit()
-session.close()
+
 print('-' * 20)
 for c in session.query(Course).all():
     print(c)
@@ -54,3 +54,5 @@ session.commit()
 
 for c in session.query(Course).all():
     print(c)
+
+session.close()
