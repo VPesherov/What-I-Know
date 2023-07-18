@@ -1,0 +1,266 @@
+План занятия:
+1. Модели
+2. Сессия
+3. Как управлять данными
+
+Для установки используем 
+pip install sqlalchemy
+
+Также для работы sqlalchemy нужен драйвер который мы изучали ранее psycopg2
+Его устанавливаем с помощью команды
+
+pip install psycopg2-binary
+
+Теперь импортируем нашу библиотеку в python
+
+import sqlalchemy
+
+И создаём движок, который будет являться абстракцией для подключения к базе данных.
+
+sqlalchemy.createengine(url) - данная функция принимает url
+
+Но это не обычный url а DSN(data source name) - строка подключения к какому-то источнику данных
+, в нашем случае строка подключения к Postgres
+Строку мы создаём по следующему принципу
+
+DSN = 'драйвер_подключения://логин:пароль@название_сервера:порт/название_бд'
+В нашем случае получим строку такого вида
+
+DSN = 'postgresql://postgres:123@localhost:5432/netology_db'
+
+И теперь передадим наш DSN в движок и сохраним в переменную engine
+
+engine = sqlalchemy.create_engine(DSN)
+
+Весь наш код пока что выглядит так
+
+import sqlalchemy
+
+DSN = 'postgresql://postgres:123@localhost:5432/netology_db'
+engine = sqlalchemy.create_engine(DSN)
+
+engine - сам по себе не создаёт никакого подключения к базе данных, это лишь объект, который
+может подключиться к БД при необходимости, когда его об этом попросят.
+
+Самый распространнённый вариант подключения к базе данны - это сессии.
+Сессии это некий аналог курсора. Через сессии мы будем добавлять объекты для отправки в базы данных
+и извлекать их.
+
+Чтоб создать сэссию нам понадобиться специальный объект - sessionmaker
+
+Данный объект импортируется из
+from sqlalchemy.orm import sessionmaker
+
+sessionmaker
+
+На вход sessionmaker принимает движок
+
+sessionmaker(bind=engine)
+
+И запишем это в переменную Session, которая будет обознать что мы создали класс для работы с сэссиями.
+
+Session = sessionmaker(bind=engine)
+
+Теперь создать сессию не составляет никакого труда. Надо лишь просто создать экземпляр данного класса.
+session = Session()
+
+Сэссию после работы также необходимо закрывать.
+session.close()
+
+Теперь поговорим о моделях.
+Модель - это специальный класс, который наследуется от некоторого базового класса.
+
+import sqlalchemy as sq
+from sqlalchemy.orm import declarative_base, relationship
+
+Base = declarative_base()
+
+
+class Course(Base):
+    #название таблица которая будет создана в postgres
+    __tablename__ = "course"
+	
+	# далее создаём колонки
+	# колонка id - колонка типа integer и с ограничением primary key
+    id = sq.Column(sq.Integer, primary_key=True)
+	# колонка name - тип строка с длиной 40 и с требованием уникальности
+    name = sq.Column(sq.String(length=40), unique=True)
+	# если же нам необходимы связи между таблицами то мы также можем их создать
+	# с помощью вызова relationship
+    homeworks = relationship("Homework", back_populates="course")
+
+Данный базовый класс создаётся с помощью вызова функции declarative_base() - это специальный класс, который
+умеет регестрировать всех своих наследников и потом по ним создавать соответствующие таблицы.
+
+Весь код будет выглядеть так
+
+import sqlalchemy as sq
+from sqlalchemy.orm import declarative_base, relationship
+
+Base = declarative_base()
+
+
+class Course(Base):
+    # название таблица которая будет создана в postgres
+    __tablename__ = "course"
+
+    # далее создаём колонки
+    # колонка id - колонка типа integer и с ограничением primary key
+    id = sq.Column(sq.Integer, primary_key=True)
+    # колонка name - тип строка с длиной 40 и с требованием уникальности
+    name = sq.Column(sq.String(length=40), unique=True)
+    # если же нам необходимы связи между таблицами то мы также можем их создать
+    # с помощью вызова relationship
+    # это свойство по которому можно связываться
+    homeworks = relationship("Homework", back_populates="course")
+
+
+class Homework(Base):
+    # название таблицы
+    __tablename__ = "homework"
+
+    # описываем столбцы, id
+    id = sq.Column(sq.Integer, primary_key=True)
+    # номер домашки
+    number = sq.Column(sq.Integer, nullable=False)
+    # описание домашки
+    description = sq.Column(sq.Text, nullable=False)
+    # курс к которому принадлежит домашнее задание
+    # тут можно заметить как создаётся ограничения внешнего ключа - таблица.столбец
+    course_id = sq.Column(sq.Integer, sq.ForeignKey("course.id"), nullable=False)
+
+    # тут мы описываем с какой таблицей хотим связаться и описать какое обратное свойство будет связываться
+    # с нами в данном случае это свойство homeworks
+    # но такой вариант очень часто бывает недоубным, так как постоянно нужно будет менять код в обоих классах
+    # course = relationship(Course, back_populates="homeworks")
+    # поэтому посмотрим на второй вариант
+    # но указываем уже не back_populates, а backref
+    # backref - автоматических создаст свойство в связывании таблицы Course и создаст там свойство homeworks
+    course = relationship(Course, backref="homeworks")
+
+Вот мы описали таблицы, но как их нам создать в базе данных?
+Обычно для этого описывают функцию
+
+def create_tables(engine):
+    Base.metadata.create_all(engine)
+
+Именно этот метод и создаст таблицы в базы данных
+Также этот метод умный и учитывает наличие таблицы в базе данных, то есть если она уже создана
+то он её не будет заново создавать.
+Но если нам нужно пересоздать таблицу - и чтоб в ней были чистые данные, то можно использовать следующий
+метод.
+
+def create_tables(engine):
+    Base.metadata.drop_all(engine)
+    Base.metadata.create_all(engine)
+
+И теперь давайте создадим наши таблицы
+create_tables(engine)
+
+Если ошибок не произошло - значит таблицы успешно были созданы. И теперь мы можем управлять данными в них.
+Пропишем такой код
+
+course1 = Course(name='Python')
+print(course1.id) # тут будет None - чтоб его не было нужно как и с курсором зафиксировать изменения
+
+session.add(course1) # добавляем наши объекты
+session.commit() # и теперь сохраняем наши изменения
+print(course1.id) # 1
+
+Посмотрим что же содержит сама по себе переменная course1
+print(course1)
+
+Для этого вспомним ООП и вспомним про метод __str__, ведь course1 - это у нас экземпляр класса.
+Например так
+
+    def __str__(self):
+        return f'{self.id}: {self.name}'
+
+Теперь вывод выглядит так
+print(course1) # 1: Python
+
+Отсюда видно, что ORM даёт больше возможностей для взаимодействия с Python, чем просто psycopg2
+
+Теперь попробуем позаполнять данные о домашней работе
+
+hw1 = Homework(number=1, description='дз1', course=course1)
+hw2 = Homework(number=2, description='дз2', course=course1)
+
+session.add_all([hw1, hw2])
+session.commit()
+
+Теперь давайте попробуем поизвлекать наши данные
+Перебрать их можно таким образом
+
+for c in session.query(Course).all():
+    print(c)
+
+У нас один курс и это 
+1: Python
+
+В данном случае нам выводится строка того вида, которую мы создали в __str__
+Поэтому нужно не забывать описывать метод __str__ для более адекватного вывода
+
+for c in session.query(Homework).all():
+    print(c)
+# Вывод
+1: 1, дз1, 1
+2: 2, дз2, 1
+
+Теперь попробуем отфильтровать данные по какому-то принципу, например мы хотим получить дз с номеро 2 и больше
+Для этого используем метод filter
+
+for c in session.query(Homework).filter(Homework.number > 1).all():
+    print(c)
+
+# 2: 2, дз2, 1
+
+И мы действительно получили только записи с 2 и больше
+Также мы можем применять и другие фильтры - например like, например отберём те дз у которых в description
+есть буква "з"
+
+for c in session.query(Homework).filter(Homework.description.like('%з%')).all():
+    print(c)
+
+Также можно задать жёсткое равенство
+
+for c in session.query(Homework).filter(Homework.number == 2).all():
+    print(c)
+
+Также с помощью ORM можно создавать и вложенные подзапросы
+Описывать их достаточно сложно, так как синтаксис довольно необычный	
+Для примера создадим ещё один курс
+И с помощью запроса мы хотим найти курсы у которых есть домашнее задание с буквой "з"
+
+c2 = Course(name='Java')
+session.add(c2)
+session.commit()
+
+# сначала создаём подзапрос, который мы будем использовать в нём мы находим все домашки с буквой "з"
+subq = session.query(Homework).filter(Homework.description.like('%з%')).subquery()
+# теперь создаём сам запрос и запишем его в переменную для простоты
+# создаём запрос с той таблицей из которой нам нужен результат делаем join
+# передаём в этот join подзапрос и соединяем их по id
+# в данном случае subq.c.course_id - "с" в данном случае это обязательная переменная которую надо указывать
+# всегда
+iterable = session.query(Course).join(subq, Course.id == subq.c.course_id)
+
+for c in iterable:
+    print(c)
+
+# 1: Python
+
+Если же например мы хотим сделать update данных то воспользуемся следующим синтаксисом
+например хотим изменить имя Java на JavaScript
+Для этого с помощью фильтра находим нужные данные а затем в словаре передаём - какие поля нужно изменить
+
+session.query(Course).filter(Course.name == 'Java').update({'name': 'JavaScript'})
+session.commit()
+
+Для удаление данных делаем то же самое но вместо update - delete
+
+session.query(Course).filter(Course.name == 'JavaScript').delete()
+session.commit()
+
+
+
