@@ -1,0 +1,7 @@
+https://pythonru.com/biblioteki/crud-sqlalchemy-orm
+
+https://stackoverflow.com/questions/6044309/sqlalchemy-how-to-join-several-tables-by-one-query
+
+https://lectureswww.readthedocs.io/6.www.sync/2.codding/9.databases/2.sqlalchemy/2.sql_expressions.html
+
+https://docs.sqlalchemy.org/en/20/orm/queryguide/select.html
