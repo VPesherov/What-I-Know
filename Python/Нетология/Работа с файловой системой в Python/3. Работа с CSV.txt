@@ -1,3 +1,6 @@
+Работа с DictWriter
+https://docs-python.ru/standart-library/modul-csv-python/klass-dictwriter-modulja-csv/
+
 Первый формат с которым мы познакомися - это CSV(Рисунок 1).
 Формат CSV можно читать даже не зная как он устроен, но Python может помочь нам упростить работу с ним. 
 Для чего используют формат CSV можно увидеть на Рисунке 2.
