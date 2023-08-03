@@ -1,0 +1,21 @@
+Инструменты для скрапинга
+1. Developer Tools в браузере
+2. Requests
+3. Beautiful Soup
+4. Requests-html
+5. Selenium
+
+Developer tools - можно открыть несколькими способами:
+
+F12
+ПКМ + Insepct/Посмотреть код
+Сочетания клавиш, например Ctrl + shift + I
+
+С помощью сайта
+
+https://www.iplocation.net/
+
+Можно узнать свой ip
+Он нам понадобиться в будущем
+
+Попробуем его вытащить
