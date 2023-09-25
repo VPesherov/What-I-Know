@@ -1,0 +1,64 @@
+Что нужно учитывать при пагинации:
+1. Количество страниц (если есть навигация на произвольную страницу)
+2. Есть ли следующая или предыдущая страница
+3. Переход на несуществующую страницу
+
+У django уже есть решение, есть встроенный пагинатор
+
+Давайте же применим его
+Создадим view-функцию
+
+#контент нашей страницы
+CONTENT = [str(i) for i in range(10000)]
+
+
+def pagi(request):
+    paginator = Paginator(CONTENT, 10) #специальный класс для пагинации который мы импортируем
+    page = paginator.get_page(5) # выбираем страницу
+    context = {
+        'page': page
+    }
+	# передаём страницу
+    return render(request, 'pagi.html', context=context)
+
+А теперь давайте попробуем отлавливать параметр нужной страницы
+
+def pagi(request):
+    page_number = int(request.GET.get("page", 1))
+    paginator = Paginator(CONTENT, 10)
+    page = paginator.get_page(page_number)
+    context = {
+        'page': page
+    }
+    return render(request, 'pagi.html', context=context)
+
+То есть теперь мы передав параметр page
+Можем получать нужную страницу
+
+http://127.0.0.1:8000/pagi/?page=2
+
+Но это всё не очень удобно - давайте попробуем сделать переходы по страницам
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    {% for e in page %}
+        <p>{{e}}</p>
+    {% endfor %}
+
+    {% if page.has_previous %}
+        <a href="?page={{page.previous_page_number}}">Назад</a>
+    {% endif %}
+
+    {% if page.has_next %}
+        <a href="?page={{page.next_page_number}}">Вперёд</a>
+    {% endif %}
+
+</body>
+</html>
+
+Вот так это делается, у page есть атрибуты которые нам помогают

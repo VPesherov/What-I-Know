@@ -17,10 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from demo.views import hello_view, sum1 # импортируем
+from demo.views import hello_view, sum1, pagi # импортируем
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('hello/', hello_view),
-    path('sum/<int:a>/<int:b>', sum1) # передаём параметры a и b
+    path('sum/<int:a>/<int:b>', sum1), # передаём параметры a и b
+    path('pagi/', pagi)
 ]
