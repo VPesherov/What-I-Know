@@ -1,0 +1,128 @@
+Здесь мы рассмотрим генерацию генерацию шаблонов.
+Шаблон - это специальный файл, который располагается в определённом месте
+
+Шаблоны по умолчанию должны быть внутри нужных приложений -> в нашем случае в папке demo, мы должны создать
+папку templates
+И внутри этой папки создадим наш html файл.
+Пусть он будет таким:
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    Hello from django
+</body>
+</html>
+
+И теперь нам надо как-то начать использовать данный шаблон.
+В этом нам поможет вспомогательная функция render
+Теперь переделаем нашу функцию hello_view:
+
+Было:
+def hello_view(request: HttpRequest) -> HttpResponse:
+    name = request.GET.get("name")
+    age = int(request.GET.get("age", 20))  # 20 - это дефолтное значение - если ничего не найдено
+    return HttpResponse(f'Hello {name}, {age}')
+
+Стало:
+def hello_view(request: HttpRequest) -> HttpResponse:
+    return render(request, 'demo.html') # путь к шаблонку указывается относительно папки templates
+
+Первым параметром всегда принимается request
+
+И теперь если мы перейдём на наш сайт, то увидем hello from django
+И не забываем зарегестрировать наше приложение в settings, а то шаблон не будет найден
+
+Казалось бы мы сделали много лишней работы, но теперь мы зато можем с помощью html - контролировать наш вывод.
+Например:
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <p style="color: blue; font-size: 20px">Hello from django</p>
+</body>
+</html>
+
+Также мы можем в шаблон - передавать наши переменные
+Для этого используется параметр context
+Это должен быть словарь
+
+def hello_view(request: HttpRequest) -> HttpResponse:
+    context = {
+        'test': 5
+    }
+    return render(request, 'demo.html', context=context) # путь к шаблонку указывается относительно папки templates
+
+И в шаблоне его выведем специальным образом
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <p style="color: blue; font-size: 20px">Hello from django</p>
+    {{test}}
+</body>
+</html>
+
+в двойных фигурных скобках указываем нашу переменную и увидем результат
+
+в словарях можно передавать всё что хотим: списки, другие словари и более сложные объекты
+
+Давайте передадим в наш шаблон список и выведем его на экран
+
+context = {
+        'test': 5,
+        'array': [1, 5, 9]
+    }
+
+И используем цикл в нашем шаблоне чтоб вывести его
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <p style="color: blue; font-size: 20px">Hello from django</p>
+    {{test}}
+    <br>
+    {% for x in array %} # начало цикла
+    {{x}} <br>
+    {% endfor %} # конец цикла
+</body>
+</html>
+
+И теперь даже попробуем создать красивый промаркированный список
+
+<body>
+    <ul style="color: blue; font-size: 20px">Hello from django</ul>
+    {{test}}
+    <br>
+    {% for x in array %}
+    <li>{{x}}</li>
+    {% endfor %}
+    </ul>
+</body>
+
+Помимо цикла for - мы можем использовать и условия
+{% if x > 5 %}
+
+{% endif %}
+
+Также у переменных мы можем вызывать методы типа к которому принадлежит переменная
+Например
+
+{{ val.upper }}
+
+Но тут мы их не вызываем, а только указываем

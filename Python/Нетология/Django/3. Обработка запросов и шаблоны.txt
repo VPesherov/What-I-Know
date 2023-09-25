@@ -82,3 +82,4 @@ https://docs.djangoproject.com/en/3.2/topics/http/urls/#path-converters
 
 Но также можно создавать и свои конвертеры:
 https://netology.ru/profile/program/dj-80/lessons/304847/lesson_items/1648571
+
