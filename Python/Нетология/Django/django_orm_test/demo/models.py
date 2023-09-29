@@ -24,4 +24,4 @@ class Person(models.Model):
     # on_delete - что делать если связанная запись исчезнет из базы данных
     # можно например поставить models.CASCADE - это будет значить, что если удалится
     # машина то, удалится и человек
-    car = models.ForeignKey(Car, on_delete=models.CASCADE)
+    car = models.ForeignKey(Car, on_delete=models.CASCADE, related_name='owners')
