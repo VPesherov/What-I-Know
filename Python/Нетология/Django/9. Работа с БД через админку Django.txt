@@ -1,0 +1,49 @@
+Давайте создадим административную панель в Django
+
+Для этого переходим в файл admin.py
+
+from .models import Person, Car
+
+
+# Register your models here.
+# создаём слеудющий код
+@admin.register(Car) # указывает для какого класса наша админка
+class CarAdmin(admin.ModelAdmin): # обязательно наследуемся от admin.ModelAdmin
+    pass
+
+теперь можем зайти в адмнику через 
+url + /admin/
+
+Он потребует логин и пароль
+Но у нас ещё нет пользователя - поэтому его нужно создать
+Его можно создать в терминале
+
+python manage.py createsuperuser
+
+Он попросит - логин, email(можно оставить пустым) и пароль
+
+После этого можем спокойно заходи в админку
+Теперь сделаем более красивое отображение в админке
+Для этого нужно обновить наш класс
+
+@admin.register(Car) # указывает для какого класса наша админка
+class CarAdmin(admin.ModelAdmin): # обязательно наследуемся от admin.ModelAdmin
+    list_display = ['id', 'brand', 'model', 'color'] # тут выводятся нужные поля при просмотре данной таблицы
+
+Если мы хотим выбрать какие-то определённые модели? Нужно настроить возможность фильтра
+Для этого нужно будет прописать свойство
+
+list_filter = ['brand', 'model']
+
+Также в админке можно сделать add 
+
+Создадим Persons
+
+@admin.register(Person)
+class PersonAdmin(admin.ModelAdmin):
+    list_display = ['id', 'name', 'car']
+
+Также для более красивого вывода можно добавить метод __str__ в Car
+
+    def __str__(self):
+        return f'{self.brand}, {self.model}: {self.color}'

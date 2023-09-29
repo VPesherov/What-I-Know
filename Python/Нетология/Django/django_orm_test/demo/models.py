@@ -13,6 +13,9 @@ class Car(models.Model):
     # Но на самом деле столбика не три, а четыре так как django автоматически добавляет столбик id
     # и отвечает за идентификацию каждой строки
 
+    def __str__(self):
+        return f'{self.brand}, {self.model}: {self.color}'
+
 
 # добавим ещё один класс, человек - который владеет автомобилем
 class Person(models.Model):
