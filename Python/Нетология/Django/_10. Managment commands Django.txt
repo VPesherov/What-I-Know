@@ -1,0 +1,44 @@
+https://habr.com/ru/articles/415049/
+
+https://docs.djangoproject.com/en/3.2/howto/custom-management-commands/
+
+Management commands — команды, выполняемые из командной строки с помощью скрипта manage.py.
+
+Наиболее частые сферы применения — это действия, выполняемые разово или периодически
+, но для которых почему-либо недоступен запуск через планировщик. 
+Например, отправка пользователям разовых сообщений, получение выборки данных из БД, проверка наличия 
+необходимых файлов и папок перед накатыванием обновлений, быстрое создание объектов модели при разработке и т.д.
+
+Если вкратце, то иногда в django нужны какие-то команды, например заполнить БД, и чтоб не создавать view - обычно такого рода команды
+помещают в 
+project_name/management/commands
+и там два файла
+__init__.py
+команда.py
+
+и там допустим может быть что-то типо такого
+
+class Command(BaseCommand):
+    def add_arguments(self, parser):
+        pass
+
+    def handle(self, *args, **options):
+        with open('phones.csv', 'r') as file:
+            phones = list(csv.DictReader(file, delimiter=';'))
+
+        for phone in phones:
+            # TODO: Добавьте сохранение модели
+            # Person.objects.create(name='P', car=car)
+            Phone.objects.create(id=phone['id'], name=phone['name']
+                                 , image=phone['image']
+                                 , price=phone['price']
+                                 , release_date=phone['release_date']
+                                 , lte_exists=phone['lte_exists']
+                                 , slug=slugify(phone['name']))
+
+
+И затем если в консоли выполнить команду
+
+python manage.py команда
+
+всё выполнится.
