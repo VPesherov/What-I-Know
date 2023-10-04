@@ -1,0 +1,155 @@
+Изучим более продвинутые возможности ORM.
+
+Связи многие-ко-мноим и их реализация в django
+
+Создадим новую модель
+
+class Product(models.Model):
+    name = models.CharField(max_length=100)
+    price = models.IntegerField()
+    category = models.CharField(max_length=50)
+
+
+И создадим заказы:
+
+class Order(models.Model):
+    products = models.ManyToManyField(Product, related_name='orders')
+
+Тут нам и нужна связь многие-ко-мноим так как один продукт может содержаться в разных заказах
+реализовывается такая связь через
+
+models.ManyToManyField(Product, related_name='orders')
+
+где первым параметрам передаём класс через который связываем, а related_name - поле которое поможет
+нам обращаться к этой модели через продукты
+
+И создадим и применим миграции
+
+python manage.py makemigrations
+python manage.py migrate
+
+Теперь мы можем сохранять и извлекать данные из нашей бд, но есть одна проблема
+Когда мы заказываем определённый продукт - мы ведь заказываемый не только сам продукт
+а можем ещё и указать количество данного продукта
+Чтоб решить эту проблему - мы можем создать промежуточную модель
+Эта вспомогательная модель, которая будет представлять промежуточную таблицу в базе данных
+Django может создать её и автоматически, но давайте всё же создадим её вручную
+
+class OrderPosition(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='positions')
+
+Здесь мы указываем - те позиции в которых учавствует данный продукт
+
+class OrderPosition(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='positions')
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='postitions')
+
+И в каком заказе учавствует продукт
+И теперь сюда мы можем добавить какие-нибудь произвольные поля - например количество
+
+class OrderPosition(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='positions')
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='postitions')
+    quantity = models.IntegerField()
+
+И теперь давайте настроим панель администратора
+
+@admin.register(Product)
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ['id', 'name', 'category', 'price']
+    list_filter = ['category']
+
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ['id']
+
+Теперь в админке мы можем создать два продукта и создать для них заказ, но если мы зайдём в заказ
+то их отображение будет неудобным, попробуем это исправить
+Для такой настройки нам надо воспользоваться дополнительными возможностями django
+
+Для этого обычно создают inline модель
+
+class OrderPositionInline(admin.TabularInline):
+    model = OrderPosition
+    extra = 3
+
+Теперь эту сущность мы можем использовать
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ['id']
+    inlines = [OrderPositionInline] # и сюда добавляем специальным поле
+
+Теперь в админке появилась дополнительная позиция
+Но информация дублируется, надо от этого избавиться
+Теперь можем сделать так
+
+class Order(models.Model):
+    pass
+    # products = models.ManyToManyField(Product, related_name='orders')
+
+Теперь посмотрим как извлекать наши заказы
+Напишем простой views, который извлекает все наши заказы
+
+def list_orders(requests):
+    orders = Order.objects.all()
+    context = {
+        'orders': orders
+    }
+    return render(requests, 'orders.html', context=context)
+
+и в html будем показывать
+
+<body>
+{% for order in orders %}
+    <p>Заказ: <b>{{order.id}}</b> </p>
+    {% for position in order.positions.all %}
+        <p>{{ position.product.name }} : {{ position.quantity }}</p>
+    {% endfor %}
+{% endfor %}
+</body>
+
+
+Теперь попробуем отфильтровать наши продукты - например вывести те у которых цена больше 600 р
+
+def list_orders_filter(requests):
+    # тут мы проваливаемся в postions.product.price >= 600
+    orders = Order.objects.filter(positions__product__price__gte=600)
+    context = {
+        'orders': orders
+    }
+    return render(requests, 'orders.html', context=context)
+
+
+Когда мы избавились от дублирования информации, удалив свойство products из модели Order
+, мы лишились возможности напрямую получать доступ к продуктам в заказе.
+
+Косвенно можно получить продукты в заказе так:
+
+1
+2
+order_positions = some_order.positions.all()
+order_products = {pos.product for pos in order_positions}
+Однако такой метод предполагает, что во всех местах, где нам потребуется получить продукты из заказа
+, придётся писать одинаковый код, что не всегда удобно. Также и в обратную сторону: 
+чтобы найти все заказы, в которых участвует продукт, необходимо написать такой код:
+
+1
+2
+product_positions = some_product.positions.all()
+product_orders = {pos.order for pos in product_positions}
+А ведь в первоначальном варианте, когда Django автоматически создавал связь m2m, 
+было удобнее — было свойство products в классе Order и related_name orders.
+На самом деле такую связь можно оставить, просто надо явно указать, 
+что связь будет осуществляться через специальную модель. 
+Тогда Django не будет создавать автоматическую связь m2m, но при этом останутся необходимые свойства:
+
+1
+2
+class Order(models.Model):
+    products = models.ManyToManyField(Product, related_name='orders', through='OrderPosition')
+Теперь можно получать продукты из заказа простым способом:
+order_products = some_order.products.all()
+Аналогично с заказами, в которых участвует продукт:
+product_orders = some_product.orders.all()
