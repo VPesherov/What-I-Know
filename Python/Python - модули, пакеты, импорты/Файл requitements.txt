@@ -27,6 +27,12 @@ source venv/bin/activate
 Сайт для того чтоб понять подробнее как его активировать
 https://pythonchik.ru/okruzhenie-i-pakety/virtualnoe-okruzhenie-python-venv
 
+Создать venv:
+python -m venv venv
+
+Команда для Windows:
+venv\Scripts\activate.bat
+
 Если ошибка и на виртуальное окружение не переходит то
 https://www.youtube.com/watch?v=vObwhyh5h5I
 
@@ -34,3 +40,4 @@ https://www.youtube.com/watch?v=vObwhyh5h5I
 Set-ExecutionPolicy Unrestricted -Scope CurrentUser
 
 И перезапустить pycharm
+
