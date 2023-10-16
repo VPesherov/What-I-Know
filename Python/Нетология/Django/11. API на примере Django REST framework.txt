@@ -228,5 +228,80 @@ def demo2(request):
 
 
 Но тут мы уже видем что код какой-то некрасивый из-за if, как же с этим быть
+Всё это можно описывать с помощью специального класса во view
+
+class DemoView(APIView):
+    def get(self, request):
+        weapons = Weapon.objects.all()  # Достанем все оружия из нашей модели
+        ser = WeaponSerializers(weapons,
+                                many=True)  # отдадим наш объект и передадим параметр mane=True это укажет нашем сериализатору
+        # что таких объектов много
+        return Response(ser.data)  # специальный класс который возвращает словарь в данном случае ser.data
+
+    def post(self, requests):
+        return Response({'status': 'OK demo 3'})
+
+
+Этот класс уникален тем что его в urls можно использовать как функцию и тогда прописываем вот так
+
+path('demo3/', DemoView.as_view()),
+
+В DRF есть ещё более удобные компоненты
+Например, когда наша view функция должен возвращать список некоторых объектов
+Мы можем воспользоваться специальным классом
+Это поможет уменьшить количества кода
+
+class DemoView1(ListAPIView):
+    queryset = Weapon.objects.all() # наши данные
+    serializer_class = WeaponSerializers # наш сериализатор
+
+Отправляем GET - работает
+
+POST запрос сейчас сломан - нам нужно его настроить
+
+class DemoView1(ListAPIView):
+    queryset = Weapon.objects.all()
+    serializer_class = WeaponSerializers
+
+    def post(self, request):
+        return Response({'status': 'OK DemoView1'})
+
+И теперь увидем что всё ок
+
+А если мы хотим получить информацию по конкретному оружию?
+Для этого тоже есть специальный класс
+
+class WeaponView(RetrieveAPIView):
+    queryset = Weapon.objects.all()
+    serializer_class = WeaponSerializers
+
+И пробуем получить наше оружие с помощью GET
+
+GET http://localhost:8000/weapon/ 
+
+Получим ошибку, всё дело в том что когда мы хотим получить какую-то конкретную сущность, нам необходимо указать
+её идентификатор
+
+Для этого в urls мы должны передать этот id
+
+path('weapon/<pk>/', WeaponView.as_view()),
+
+где pk - prinary key
+
+GET запрос отработает
+
+Также поменяем немного наш сериализатор, чтоб можно было видеть и наши id
+
+class WeaponSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Weapon # какую модель используем
+        fields = ['id', 'power', 'rarity'] # какие свойства
+
+В DRF реализованы основные классы для работы с данными, такие как ListAPIView, RetrieveAPIView и т.п. 
+Подробнее про такие классы и их возможности можно почитать на этом ресурсе:
+https://www.django-rest-framework.org/api-guide/generic-views/
+
+
+
 
 

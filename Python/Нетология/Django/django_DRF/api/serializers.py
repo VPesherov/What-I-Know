@@ -11,4 +11,4 @@ from api.models import Weapon
 class WeaponSerializers(serializers.ModelSerializer):
     class Meta:
         model = Weapon # какую модель используем
-        fields = ['power', 'rarity'] # какие свойства
+        fields = ['id', 'power', 'rarity'] # какие свойства

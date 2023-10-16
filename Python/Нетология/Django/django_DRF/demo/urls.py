@@ -16,11 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from api.views import demo, demo1, demo2
+from api.views import demo, demo1, demo2, DemoView, DemoView1, WeaponView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('demo/', demo),
     path('demo1/', demo1),
     path('demo2/', demo2),
+    path('demo3/', DemoView.as_view()),
+    path('demo4/', DemoView1.as_view()),
+    path('weapon/<pk>/', WeaponView.as_view()),
 ]
