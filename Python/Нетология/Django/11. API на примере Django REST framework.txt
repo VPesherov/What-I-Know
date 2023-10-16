@@ -1,0 +1,232 @@
+Мы познакомимся с:
+-Как именуются ресурсы в REST API
+-Установка и настройка DRF
+-Компоненты DRF
+-Как дебажить DRF
+
+REST API — архитектурный стиль проектирования API.
+
+Основные требования:
+
+взаимодействие клиент-сервер;
+запросы содержат в себе все необходимое состояние;
+строгое именование ресурсов;
+использование семантики HTTP-методов и определенных кодов возврата.
+
+Установка и настройка DRF:
+
+DRF - Django Rest Framework - является стандартом для реализации API на Django.(создание API с помощью Django)
+
+pip install djangorestframework
+
+затем заходим в settings.py
+
+В INSTALLED_APPS добавляем 'rest_framework'
+
+На этом базовая настройка закончена
+
+---Компоненты DRF---
+
+DRF состоит из следующих основных компонентов:
+
+-View и ViewSet - отвечают за бизнес логику
+-сериализаторы - за отображение данных
+-роутер - чтоб маршрутизировать запрос
+-система управления доступом - для разграничения прав
+-фильтры - желаемые набор данных
+
+Во views создадим обработчик demo
+
+from django.shortcuts import render
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+
+# с помощью декоратора указываем на какие методы реагировать в данном случае укажем GET
+@api_view(['GET'])
+def demo(request):
+    data = {'message': 'Hello'} # создадим произвольный словарь
+    return Response(data) # специальный класс который возвращает словарь
+
+Пропишем urls и запустим
+
+И увидем ошибку
+
+OperationalError at /demo/
+
+На самом деле нужно применить миграции
+
+python manage.py migrate
+
+Теперь обновим нашу страницу и увидем результат
+
+HTTP 200 OK
+Allow: GET, OPTIONS
+Content-Type: application/json
+Vary: Accept
+
+{
+    "message": "Hello"
+}
+
+Теперь разберёмся как работать DRF с моделями
+
+Создадим свою модель пусть это будет Weapon
+
+class Weapon(models.Model):
+    power = models.IntegerField()
+    rarity = models.CharField(max_length=50)
+    value = models.IntegerField()
+
+Создадим и применим миграции
+Создадим несколько оружий с помощью консоли для это:
+
+python manage.py shell
+
+Там пишем
+
+>>> from api.models import Weapon
+>>> Weapon(power=10, rarity='epic', value=100).save()
+>>> Weapon(power=50, rarity='rare', value=300).save() 
+
+Перепишем нашу view функцию
+
+@api_view(['GET'])
+def demo1(request):
+    weapons = Weapon.objects.all() # Достанем все оружия из нашей модели
+    data = {'message': 'Hello'}  
+    return Response(data)  # специальный класс который возвращает словарь
+
+Но проблема в том что в weapons - лежат сложные объекты, а наш api сервис воспринимает только простые объекты по
+типу строк, чисел, дат и тд
+Нужно как-то это исправить
+
+Для этого есть сериализатор - это специальный класс который знает как из сложного объекта Python - сделать
+json, и наоборот.
+
+Для этого в нашем приложение создадим специальный файл
+serializers.py
+
+И именно тут мы и опишем наш сериализатор
+
+from rest_framework import serializers
+
+class WeaponSerializers(serializers.Serializer):
+    power = serializers.IntegerField()
+    rarity = serializers.CharField() # тут нет необходимости указывать max_length
+
+
+Готово теперь вернёмся и переделаем нашу view функцию
+
+@api_view(['GET'])
+def demo1(request):
+    weapons = Weapon.objects.all()  # Достанем все оружия из нашей модели
+    ser = WeaponSerializers(weapons, many=True) # отдадим наш объект и передадим параметр mane=True это укажет нашем сериализатору
+                                                # что таких объектов много
+    return Response(ser.data)  # специальный класс который возвращает словарь в данном случае ser.data
+
+В итоге получим
+
+HTTP 200 OK
+Allow: GET, OPTIONS
+Content-Type: application/json
+Vary: Accept
+
+[
+    {
+        "power": 10,
+        "rarity": "epic"
+    },
+    {
+        "power": 50,
+        "rarity": "rare"
+    }
+]
+
+Но на самом деле видно что наш сериализатор очень похож на нашу модель
+Поэтому мы можем воспользоваться специальным сериализатором
+
+class WeaponSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Weapon # какую модель используем
+        fields = ['power', 'rarite'] # какие свойства
+
+Обновим браузер и увидем, что ничего не изменилось - только кода стало меньше
+
+А теперь давайте попробуем разрешить нашему обработчику отвечать на POST и GET и у каждого своя логика
+Разграничим нашу логику с помощью if
+
+@api_view(['GET', 'POST'])
+def demo2(request):
+    if request.method == 'GET':
+        weapons = Weapon.objects.all()  # Достанем все оружия из нашей модели
+        ser = WeaponSerializers(weapons, many=True) # отдадим наш объект и передадим параметр mane=True это укажет нашем сериализатору
+                                                    # что таких объектов много
+        return Response(ser.data)  # специальный класс который возвращает словарь в данном случае ser.data
+    if request.method == 'POST':
+        pass
+
+Но вопрос, а как нам воспользоваться методом POST - ведь POST нельзя пользоваться также как и GET через браузер.
+Для этого можно воспользоваться специальным интрументом 
+Один из них Rest Client - для Visual Studio Code
+
+Установим там Extensions -> Rest Client
+
+Далее можно создать файл в нашем проекте открыт при этом нашу папку с проетком в visual studio:
+requests.http
+
+И пропишем там следующее
+
+GET http://localhost:8000/demo1/
+
+И нажмём на кнопку Send Request
+Увидем тоже самое что и браузере
+
+HTTP/1.1 200 OK
+Date: Mon, 16 Oct 2023 04:03:48 GMT
+Server: WSGIServer/0.2 CPython/3.11.5
+Content-Type: application/json
+Vary: Accept, Cookie
+Allow: GET, OPTIONS
+X-Frame-Options: DENY
+Content-Length: 59
+X-Content-Type-Options: nosniff
+Referrer-Policy: same-origin
+Cross-Origin-Opener-Policy: same-origin
+
+[
+  {
+    "power": 10,
+    "rarity": "epic"
+  },
+  {
+    "power": 50,
+    "rarity": "rare"
+  }
+]
+
+Для разделения нескольких запросов используем
+
+###
+
+POST http://localhost:8000/demo2/
+
+И получим ошибку - потому что логика не прописана и возвращаем просто pass, а ведь API сервис ожидает
+что мы ответим некоторым Response
+
+Давайте пока что подсунем ему какой-нибудь словарик и убедимся что всё работает
+
+@api_view(['GET', 'POST'])
+def demo2(request):
+    if request.method == 'GET':
+        weapons = Weapon.objects.all()  # Достанем все оружия из нашей модели
+        ser = WeaponSerializers(weapons, many=True) # отдадим наш объект и передадим параметр mane=True это укажет нашем сериализатору
+                                                    # что таких объектов много
+        return Response(ser.data)  # специальный класс который возвращает словарь в данном случае ser.data
+    if request.method == 'POST':
+        return Response({'status': 'OK'})
+
+
+Но тут мы уже видем что код какой-то некрасивый из-за if, как же с этим быть
+
+
