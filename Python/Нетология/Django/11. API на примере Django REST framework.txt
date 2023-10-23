@@ -301,7 +301,9 @@ class WeaponSerializers(serializers.ModelSerializer):
 Подробнее про такие классы и их возможности можно почитать на этом ресурсе:
 https://www.django-rest-framework.org/api-guide/generic-views/
 
+ОЧЕНЬ КРУТАЯ ССЫЛКА С МЕТОДАМИ
 
+https://www.geeksforgeeks.org/django-rest-api-crud-with-drf/
 
 
 
