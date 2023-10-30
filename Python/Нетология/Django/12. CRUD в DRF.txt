@@ -1,0 +1,421 @@
+Введение:
+
+CRUD — акроним, обозначающий четыре базовые функции, используемые при работе с базами данных: создание, чтение, модификация, удаление. (Create Read Update Delete)
+
+Изучим: 
+- Что нужно для CRUD операций
+- ViewSet и роутеры
+- Сериализаторы
+- Фильтрация
+- Пагинация
+
+ViewSet и роутеры:
+Представим что нам нужно разработать API для комментариев
+
+Создадим для начал модель
+
+class Comment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE) # юзер который оставил комментарий
+    text = models.TextField() # текст комментария
+    created_at = models.DateTimeField(auto_now_add=True) # когда создано с автозаполнением
+
+
+в терминале применим все миграции, а также создадим нашего пользователя
+
+python manage.py createsuperuser
+
+создадим нашего admin он и будет первым юзером
+
+затем с помощью shell наполним бд
+
+python manage.py shell
+
+>>> from demo.models import Comment             
+>>> from django.contrib.auth.models import User 
+>>> u = User.objects.first()
+>>> u
+<User: admin>
+>>> c            
+<Comment: Comment object (None)>
+>>> c = Comment(user=u, text='demo text')       
+>>> 
+>>> c
+<Comment: Comment object (None)>
+>>> c.created_at
+>>> c.save()
+>>> c
+<Comment: Comment object (1)>
+>>> c.created_at
+datetime.datetime(2023, 10, 30, 3, 46, 54, 317082, tzinfo=datetime.timezone.utc)
+
+Создадим базовый обработчки во views
+
+from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
+
+# Create your views here.
+
+class CommentViewSet(ViewSet):
+    def list(self,request):
+        return Response({'status': 'OK'})
+
+И правильно будет реализовать через каждый метод
+И будем наследловаться от другой модели
+
+class CommentViewSet(ModelViewSet):
+    def list(self, request):
+        return Response({'status': 'OK'})
+
+    def retrieve(self, request): # чтение
+        pass
+
+    def destroy(self, request): # удаление
+        pass
+
+    def update(self, request): # обновление
+        pass
+
+    def create(self, request): # создание
+        pass
+
+Но давайте её переделаем в более лучший вид
+
+class CommentViewSet(ModelViewSet):
+    queryset = Comment.Objects.all()
+    serializer_class = CommentSerializer()
+
+И создадим сериализатор для всего этого
+
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ['id', 'user', 'text', 'created_at']
+
+и теперь нам осталось прописать url, но есть следующая проблема
+viewset это набор сразу нескольких обработчиков
+тут нам на помощь приходят роутеры
+
+Роутер - специальный класс, который умеет правильно регестрировать маршруты для ViewSet
+
+Давайте создадим роутер для комментариев
+
+в urls.py делаем следующее
+
+r = DefaultRouter()
+r.register('comments', CommentViewSet)
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+] + r.urls # тут мы добавляем наши маршруты
+
+
+Запускаем и не забываем в apps добавить 'rest_framework'
+
+и перейдя по localhost уже увидим что у нас есть один маршрут,
+а также можно перейти сразу по api, который покажет все комментарии
+
+также сразу есть возможность и создать комментарии
+
+И теперь мы можем из rest клиента в моём случае это VisualStudioCode
+потестировать API
+покидаем запросы
+
+
+@baseUrl = http://localhost:8000/
+
+###
+
+GET {{baseUrl}}/comments/
+
+
+### тут обязательно указывать content-type и использовать двойные ковычки ""
+
+POST {{baseUrl}}/comments/
+Content-Type: application/json
+
+{
+    "user": 1,
+    "text": "text from rest client"
+}
+
+также можно обратиться и к определённому комментарию
+
+###
+
+GET {{baseUrl}}/comments/2
+
+также можно обновить с помощью put или patch
+обязательно в конец добавлять /
+
+###
+
+PATCH {{baseUrl}}/comments/2/
+Content-Type: application/json
+
+{
+    "text": "new comment patch"
+}
+
+И можно удалить
+
+###
+DELETE {{baseUrl}}/comments/2/
+
+--------------------
+
+Сериализаторы, валидация и обновление данных
+
+Сериализатор может не только из py-object в json и наоборот
+Он может выполнять ещё и следующие функции:
+-Валидация данных
+-Создание и обновление объектов
+
+У нас есть такой сериализатор
+
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ['id', 'user', 'text', 'created_at']
+
+Но что если мы хотим отфильтровать данные - например не хотим давать пользователь вводить комментарии меньше 10 символов?
+Для этого нам необходимо явно описать свойство текст
+
+class CommentSerializer(serializers.ModelSerializer):
+    text = serializers.CharField(min_length=10) # опишем минимальную длину
+    
+    class Meta:
+        model = Comment
+        fields = ['id', 'user', 'text', 'created_at']
+
+А что если наша логика более сложная например убрать запрещённые слова
+Для этого в сериалиализаторе можно реализовать специальные методы
+Которые начинаются с validate
+
+Для этого нужна специальные метод внутри нашего сериализатор
+
+class CommentSerializer(serializers.ModelSerializer):
+    text = serializers.CharField(min_length=10)
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'user', 'text', 'created_at']
+
+    def validate_text(self, value):
+        if 'text' in value:
+            raise ValidationError('Вы использовали запрещённое слово')
+        return value
+
+Обычно такие методы начинаются со слова validate + поле которое хотим обработать в данном случае text
+Представим что слово 'text' являтся неким спам словом и его нельзя
+и напишем простую логику
+
+    def validate_text(self, value):
+        if 'text' in value:
+            raise ValidationError('Вы использовали запрещённое слово')
+        return value
+
+Теперь попробуем поделать API-запросы
+Для этого попробуем создать новые комментарии с фразой text
+
+POST {{baseUrl}}/comments/
+Content-Type: application/json
+
+{
+    "user": 1,
+    "text": "text from rest client"
+}
+
+Получили ошибку
+
+Если же уберём text - то всё будет ок
+
+Также если сделать коммент < 10 символов то получим тоже ошибку
+
+###
+
+POST {{baseUrl}}/comments/
+Content-Type: application/json
+
+{
+    "user": 1,
+    "text": "from"
+}
+
+
+Будет ошибка
+
+А если мы хотим проверить валидацию сразу нескольких полей
+Например определённому пользователю можно использовать запрещённые слова
+
+Реализуем следующий метод
+Который запретит писать пользователю 1 а также проверит наличия слова hello
+
+# attrs - список наших полей или же атрибутов
+    def validate(self, attrs):
+        if 'hello' in attrs['text'] or attrs['user'].id == 1:
+            raise ValidationError('Что-то не так')
+
+        return attrs
+
+Вот так работает валидация в сериализаторах
+
+Теперь разберём вторую функцию сериализатора - Создание и удаление объектов
+
+По умолчанию в нашем сериализаторе уже есть это поведение, но а что если мы хотим изменить эту логику или изменить поведение
+Вновь создаём метод, просто выведем какую инфу мы создаём
+
+    def create(self, validated_data):
+        print(validated_data)
+        super().create(validated_data) # и просто создадим её базовым методом 
+
+И в консоли видна информация
+
+{'user': <User: admin>, 'text': 'from hell fasdf'}
+
+Это словарь
+
+-------------------
+
+Теперь разберёмся с фильтрацией данных в DRF
+
+Для начала нам нужно установить библиотеку django_filter
+
+pip install django_filter
+
+И затем надо подключить его в INSTALLED_APPS
+
+'django_filters',
+
+И надо указать нашу настройку для rest_framework
+
+в конце INSTALLED_APPS
+
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend' # этот фильтр проверяет параметр на равенство некоторому значению
+    ]
+}
+
+Теперь можно поменять наш views
+
+class CommentViewSet(ModelViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    filterset_fields = ['user',] # наши фильтры например по user
+
+И теперь сделаем запрос
+
+###
+
+GET {{baseUrl}}/comments/
+
+А теперь попробуем пофильтровать - это делается с помощью параметров ?user=
+
+###
+
+GET {{baseUrl}}/comments/?user=1
+
+Ничего не изменилось, это потому что у нас есть только один пользователь и он и давал нам всем комментарии, но попробуем вызвать пользователя 2
+
+###
+
+GET {{baseUrl}}/comments/?user=2
+
+Получим ошибку
+
+Помимо такого фильтра, есть ещё поисковый фильтр - который ищет по тексту
+
+На самом деле, чтоб постоянно не добавлять в INSTALLED_APPS - можно добавлять в саму view функцию
+
+class CommentViewSet(ModelViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['user']
+
+И теперь добавим поле по которому будем искать
+
+class CommentViewSet(ModelViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['user']
+
+    search_fields = ['text', ]
+
+И попробуем поискать наши комментарии, здесь нужен параметр ?search=
+и не смотря на то что мы ищем текст - его мы передаём без ковычек
+
+###
+
+GET {{baseUrl}}/comments/?search=hell
+
+Но отсюда получается - что слово search - зарезервировано
+И мы можем его поменять, снова лезем в настройки
+
+Теперь настройки выглядят так
+
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend' # этот фильтр проверяет параметр на равенство некоторому значению
+    ],
+    'SEARCH_PARAM': 'q'
+}
+
+И сделаем запрос
+
+###
+
+GET {{baseUrl}}/comments/?q=hell
+
+Работает
+
+И последний фильтр - ordering фильтр - сортировка
+
+Добавляем ещё один фильтр
+
+class CommentViewSet(ModelViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['user']
+
+    search_fields = ['text', ]
+    ordering_filets = ['id', 'user', 'text']
+
+И теперь задаём запрос и сортируем по id
+
+###
+
+GET {{baseUrl}}/comments/?q=hell&ordering=id
+
+Да мы можем передавать несколько параметров
+Чтоб сортировать в обратном порядке - нужно указать -
+
+###
+
+GET {{baseUrl}}/comments/?q=hell&ordering=-id
+
+готово
+
+Через запятую можно указывать несколько параметров сортировки через запятую
+
+###
+
+GET {{baseUrl}}/comments/?q=hell&ordering=created_at,id
+
+Также ordering можно сменить на другое название
+
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend' # этот фильтр проверяет параметр на равенство некоторому значению
+    ],
+    'SEARCH_PARAM': 'q',
+    'ORDERING_PARAM': 'o'
+}
+
+теперь можно обращаться через o
+
+###
+
+GET {{baseUrl}}/comments/?q=hell&o=created_at,id

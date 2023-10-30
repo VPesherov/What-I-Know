@@ -7,3 +7,106 @@ POST http://localhost:8000/demo4/
 ###
 
 GET http://localhost:8000/weapon/1/
+
+###
+# примеры API-запросов
+
+@baseUrl = http://localhost:8000/
+
+# получение датчиков
+GET {{baseUrl}}/sensors/
+Content-Type: application/json
+
+###
+
+# создание датчика
+POST {{baseUrl}}/sensors/
+Content-Type: application/json
+
+{
+  "name": "ESP32",
+  "description": "Датчик на кухне за холодильником"
+}
+
+###
+
+# обновление датчика
+PATCH {{baseUrl}}/sensors/1/
+Content-Type: application/json
+
+{
+  "description": "Перенес датчик на балкон"
+}
+
+###
+
+# добавление измерения
+POST {{baseUrl}}/measurements/
+Content-Type: application/json
+
+{
+  "id_sensor": 1,
+  "temperature": 22.3
+}
+
+###
+
+# получение информации по датчику
+GET {{baseUrl}}/sensors/1/
+Content-Type: application/json
+
+
+###
+
+GET {{baseUrl}}/comments/
+
+
+###
+
+POST {{baseUrl}}/comments/
+Content-Type: application/json
+
+{
+    "user": 1,
+    "text": "from hell fasdf"
+}
+
+###
+
+GET {{baseUrl}}/comments/2
+
+
+###
+
+PATCH {{baseUrl}}/comments/2/
+Content-Type: application/json
+
+{
+    "text": "new comment patch"
+}
+
+
+###
+
+###
+DELETE {{baseUrl}}/comments/2/
+
+###
+
+GET {{baseUrl}}/comments/?user=2
+
+###
+
+GET {{baseUrl}}/comments/?search=hell
+
+###
+
+GET {{baseUrl}}/comments/?q=hell&ordering=id
+
+###
+
+GET {{baseUrl}}/comments/?q=hell&ordering=created_at,id
+
+###
+
+GET {{baseUrl}}/comments/?q=hell&o=created_at,id
