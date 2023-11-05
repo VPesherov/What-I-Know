@@ -1,0 +1,339 @@
+Мы узнаем:
+-Идентификация, аутенфикация и авторизация
+-Авторизация в DRF
+-Throttling
+
+Давайте создадим сервис для работы с объявлениями
+Создадим такую модель
+
+class Adv(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    open = models.BooleanField(default=True)
+
+Далее опишем view-set для доступа к этому ресурсу
+
+
+from demo.models import Adv
+from demo.serializers import AdvSerializer
+
+
+class AdvViewSet(ModelViewSet):
+    queryset = Adv.objects.all()
+    serializer_class = AdvSerializer
+
+Также нужно создать наш сериализатор
+
+class AdvSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Adv
+        fields = ['id', 'user', 'text', 'created_at', 'open']
+
+и описать наши маршруты и роутеры
+
+from rest_framework.routers import DefaultRouter
+
+from demo.views import AdvViewSet
+
+r = DefaultRouter()
+r.register('adv', AdvViewSet)
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+] + r.urls
+
+И теперь проверим что всё работает и отправим несколько запросов
+
+Теперь сделаем пару запросов, но перед этим не забываем создать superuser
+И отправляем запросы
+
+### отправим запрос
+
+GET {{baseUrl}}/adv/
+
+### создадим запись
+
+POST {{baseUrl}}/adv/
+Content-Type: application/json
+
+{
+    "user": 1,
+    "text": "Объвление"
+}
+
+Сейчас в нашем API есть проблема - любой может создать от чужого имени объявление
+Всего лишь угадав с цифрой поля user
+
+Нам нужно реализовать какую-то аутенфикацию
+
+Для этого переходи в раздел settings
+
+В секцию install_apps
+и подключаем два приложения
+
+
+    'rest_framework',
+    'rest_framework.authtoken'
+
+Второй параметр как раз таки и отвечает за аутенфикацию
+Этот параметр добавляет новый модели - а значит нам нужно применить миграции
+
+python manage.py migrate
+
+И теперь нужно создать настройку REST_FRAMEWORK
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ]
+}
+
+Данный механизм - включает идентификацию по токену
+Ещё есть другие виды аутенфикаций - BASIC,SESSION,TOKEN
+
+BASIC - используется для тестирования и непригодно для продакшена
+SESSION - использует стандартные сессия из джанго
+но в данном случае лучше использовать TOKEN - так как мы создаём API сервис
+
+Теперь нам нужно создать токен для каждого пользователя - чтоб они могли как-то проходить аутенфикацию
+
+Это можно сделать с помощью административной панели
+
+И там мы видем - раздел Tokens - он нам и нужен
+
+Теперь создав токен - мы можем выполнять определённые действия
+
+Теперь разберёмся как его использовать в запросах
+
+Для этого в запросе нужно указать доп параметр
+И теперь наш запрос выглядит так
+
+### создать запись с помощью аутенфикации
+
+POST {{baseUrl}}/adv/
+Content-Type: application/json
+Authorization: Token 325b8785388c2ceb98da90b81bffa8b58782d7c0
+
+{
+    "text": "Объвление 1"
+}
+
+И если сделаем такой запрос - получим ошибку
+Ошибка возникает потому что пользователь у нас - параметр обязательный, а мы его больше не передаём
+Попробуем обойти эту ошибку
+
+Для этого нужно изменить механизм создания объектов
+Переходим в наш viewset
+
+
+class AdvViewSet(ModelViewSet):
+    queryset = Adv.objects.all()
+    serializer_class = AdvSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+создаём метод perform_create - аналогичный метод есть и на update и на другие типы запросов
+и с помощью save и request.user - сохраняем нашего пользователя
+и теперь нужно поменять сериализатор
+
+
+class AdvSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Adv
+        fields = ['id', 'user', 'text', 'created_at', 'open']
+        read_only_fields = ['user', ]
+
+с помощью поля read_only_fields - мы указываем что 'user' это только для чтения
+
+
+### создать запись с помощью аутенфикации
+
+POST {{baseUrl}}/adv/
+Content-Type: application/json
+Authorization: Token 325b8785388c2ceb98da90b81bffa8b58782d7c0
+
+{
+    "text": "Объвление 1"
+}
+
+Теперь наш запрос работает
+
+Теперь попробуем удалить объявление
+
+
+### удаление объявления
+
+DELETE {{baseUrl}}/adv/1/
+
+Всё работает
+Но опять же - мы удалили без какой-либо аутенфикации - это неправильно
+И вообще правильно будет - позволять пользователям - работать только со своими объявлениями
+
+За такое разделение отвечают специальный классы
+Они описываются во viewset 
+с помощью следующих настроек
+
+
+class AdvViewSet(ModelViewSet):
+    queryset = Adv.objects.all()
+    serializer_class = AdvSerializer
+
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+Теперь попробуем что-либо сделать
+
+### удаление объявления
+
+DELETE {{baseUrl}}/adv/2/
+
+выдаст ошибку - что нет аутенфикации
+
+### удаление объявления
+
+DELETE {{baseUrl}}/adv/2/
+Authorization: Token 325b8785388c2ceb98da90b81bffa8b58782d7c0
+
+Готово! 
+Но вновь проблема, мы не проверяем - а кто является владельцем этого объявления?
+Сейчас любой зарегестрировшийся человек - может удалить наши объявления
+Чтоб это исправить нам нужен другой класс, который будет проверять доступ к действиям
+
+Для этого обычно создают отдельный файл - permissions.py
+
+from rest_framework.permissions import BasePermission
+
+
+class IsOwner(BasePermission):
+    # имеет ли пользователь право на работу с ресурсом
+    # мы этот метод менять не будем
+    # def has_permission(self, request, view):
+    #    pass
+
+    # имеет ли пользователь на взаимодействие с объектом
+    def has_object_permission(self, request, view, obj):
+        return request.user == obj.user
+
+Просто вернём true или false на совпадение
+И давайте создадим второго пользователя чтоб проверить функционал
+python manage.py createsuperuser
+
+только с другим логином 
+и теперь создадим также для него ключ - через панель админа
+
+### удаление объявления первого пользователя с токеном второго
+
+DELETE {{baseUrl}}/adv/2/
+Authorization: Token 57d5a1d6766655f2da293476d8dd4e8cdd377647
+
+Удаление произойдёт - но это потому что мы не сделали проверку а только вернули True или False
+Нам нужно включить настройку во viewset
+
+    permission_classes = [IsAuthenticated, IsOwner]
+
+Теперь если выполнить запрос
+
+### удаление объявления первого пользователя с токеном второго
+
+DELETE {{baseUrl}}/adv/4/
+Authorization: Token 57d5a1d6766655f2da293476d8dd4e8cdd377647
+
+Будет ошибка - нет прав
+Всё получилось
+
+Но теперь следующая проблема - мы не можем читать чужие объявления - только свои
+
+
+### чтение чужого объявления
+
+GET {{baseUrl}}/adv/5/
+Authorization: Token 57d5a1d6766655f2da293476d8dd4e8cdd377647
+
+получим ошибку - что нет прав
+эту ошибку нужно исправить вручную
+
+перепишем наш IsOwner
+
+
+class IsOwner(BasePermission):
+    # имеет ли пользователь право на работу с ресурсом
+    # мы этот метод менять не будем
+    # def has_permission(self, request, view):
+    #    pass
+
+    # имеет ли пользователь на взаимодействие с объектом
+    def has_object_permission(self, request, view, obj):
+        if request.method == 'GET':
+            return True
+        return request.user == obj.user
+
+Если метод get - то всегда True
+Теперь мы можем читать чужие объявления
+
+------------------
+
+Throttling - это механизм, который позволяет контролировать - сколько запросов за еденицу времени будет отправлено от клиента на сервер
+
+Самый простой способ - это сделать это в настройках
+
+Дописываем наши настройки
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.UserRateThrottle',
+        'rest_framework.throttling.AnonRateThrottle'
+    ]
+}
+
+Тут мы настроили - сколько может отправлять запрос анонимный пользователь и авторизированный пользователь
+И теперь указываем количество запросов в минуту
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.UserRateThrottle',
+        'rest_framework.throttling.AnonRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'user': '10/minute',
+        'anon': '2/minute',
+    }
+}
+
+Всё работает
+Также можно для каждого viewset - задавать свои настройки
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_THROTTLE_CLASSES': [
+#        'rest_framework.throttling.UserRateThrottle',
+#        'rest_framework.throttling.AnonRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'user': '10/minute',
+        'anon': '2/minute',
+    }
+}
+
+Убираем(комментируем в данном случае) - наши настройки
+И во viewset добавляем
+
+throttle_classes = [AnonRateThrottle]
+
+И теперь настройка будет работать только для Anon пользователь
+
+

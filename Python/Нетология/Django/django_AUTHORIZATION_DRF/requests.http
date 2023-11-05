@@ -1,0 +1,33 @@
+@baseUrl = http://localhost:8000
+
+###
+
+### отправим запрос
+
+GET {{baseUrl}}/adv/
+
+### создадим запись
+
+POST {{baseUrl}}/adv/
+Content-Type: application/json
+
+{
+    "user": 1,
+    "text": "Объвление"
+}
+
+### создать запись с помощью аутенфикации
+
+POST {{baseUrl}}/adv/
+Content-Type: application/json
+Authorization: Token 325b8785388c2ceb98da90b81bffa8b58782d7c0
+
+{
+    "text": "Объвление 1"
+}
+
+### удаление объявления
+
+DELETE {{baseUrl}}/adv/2/
+
+
