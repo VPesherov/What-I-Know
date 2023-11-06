@@ -81,8 +81,8 @@ class CommentViewSet(ModelViewSet):
 Но давайте её переделаем в более лучший вид
 
 class CommentViewSet(ModelViewSet):
-    queryset = Comment.Objects.all()
-    serializer_class = CommentSerializer()
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
 
 И создадим сериализатор для всего этого
 
