@@ -200,7 +200,269 @@ def test_api():
 
 Параметризация входных данных. Написание фикстур.
 
+-----
+
+Поговорим о фикстурах и данных для тестов.
+
+Первым делом переименуем наш тест из 
+test_api -> test_get_message
+
+ведь он тестирует получение сообщений методом get, а не всё api
+
+теперь добавим ещё один тест, которые проверяет возможность создания сообщений
+начнём писать код
+
+@pytest.mark.django_db
+def test_create_message():
+    client = APIClient()
+
+Тут мы уже видим, что код у нас дублируется - это не очень круто
+В этом нам помогут фикстуры
+Фикстура - это специальная функция, которая возвращает некоторое значение и мы их можем принимать в качестве аргументов
+наших тестирующих функций
+Давайте реализуем такую фиктуру
+
+@pytest.fixture
+def client():
+    return APIClient()
+
+Теперь из кода мы можем убрать наш код типа
+
+client = APIClient()
+
+И разместить например здесь
+
+def test_get_message(client):
+
+и теперь можно переписать наши тесты
+
+# первый тест
+
+@pytest.mark.django_db
+def test_get_message(client):
+    # Arrange - подготовка данных
+    User.objects.create_user('admin')
+    Message.objects.create(user_id=1, text='test')
+    # Act - тестируемый функционал
+    response = client.get('/messages/')
+    # Assert - проверка
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]['text'] == 'test'
+
+# второй тест
+
+@pytest.mark.django_db
+def test_create_message(client):
+    response = client.post('/messages/', data={'user': 1, 'text': 'test text post'})
+    assert response.status_code == 201
+
+И получим ошибку по второму тесту - потому что пользователь у нас не создан - он создаётся только внутри первого теста - и всё,
+поэтому пользователя с id 1 у нас нету
+
+Давайте создадим такого пользователя
+
+@pytest.mark.django_db
+def test_create_message(client):
+    User.objects.create_user('admin')
+    response = client.post('/messages/', data={'user': 1, 'text': 'test text post'}, format='json')
+    assert response.status_code == 201
+
+И также мы забыли добавить, что данные должны передаваться в формате json
+Для этого нужно добавить параметр
+
+format='json'
+
+Почему-то не работает
+
+@pytest.mark.django_db
+def test_create_message(client):
+    a = User.objects.create_user('admin')
+    print(a.id)
+    response = client.post("/messages/", data={"user": 2, "text": "test text"}, format="json")
+    # print(User.objects.all())
+    assert response.status_code == 201
+
+Не работало по следующей причине - потому что почему-то пользователь создавался под id - 2 а не id - 1
+Теперь обратим внимание, что пользователь у нас вновь дублируется - его можно запихнуть в фикстуру
+
+@pytest.fixture
+def user():
+    return User.objects.create_user('admin')
+
+И изменим наши функции
+
+@pytest.mark.django_db
+def test_get_message(client, user):
+    # Arrange - подготовка данных
+    # User.objects.create_user('admin')
+    Message.objects.create(user_id=user.id, text='test')
+    # Act - тестируемый функционал
+    response = client.get('/messages/')
+    # Assert - проверка
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]['text'] == 'test'
 
 
+@pytest.mark.django_db
+def test_create_message(client, user):
+    # User.objects.create_user('admin')
+    response = client.post("/messages/", data={"user": user.id, "text": "test text"}, format="json")
+    # print(User.objects.all())
+    assert response.status_code == 201
 
+И теперь корректнее будет подставлять user.id а не цифры как мы делали это до этого
+
+Теперь попробуем исправить ошибку - что мы передаём не в json формате, он можно исправить и другим способом
+Для этого надо в settings.py 
+В секции REST_FRAMEWORK - если её нет нужно создать её
+Добавляем такую настройку
+
+REST_FRAMEWORK = {
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+}
+
+Теперь можно убрать из наших тестов настройку format='json'
+
+Но было бы неплохо ещё кое-что проверить во втором нашем тесте, вдруг наш запрос проходит, но в базе данных - не появляется сообщение
+Как же быть?
+Давайте убедимся, что после запроса в нашей бд - стало на одно сообщение больше
+Для этого немного перепишем наш тест
+
+@pytest.mark.django_db
+def test_create_message(client, user):
+    # User.objects.create_user('admin')
+	# считаем сколько сообщений в бд до создания
+    count = Message.objects.count()
+
+    response = client.post("/messages/", data={"user": user.id, "text": "test text"})
+    # print(User.objects.all())
+
+    assert response.status_code == 201
+    assert Message.objects.count() == count + 1 # их должно стать - на одно больше
+
+Но есть ещё одна проблема - а если мы хотим создавать кучу сообщений - может быть сотню или даже тысячу?
+
+В ручную создавать такие объекты - было бы очень неудобно - тут нам на помощь приходят специальные возможности - по созданию
+рандомных данных
+Одна из таких библиотек - которая позволяет нам это сделать
+
+pip install model_bakery
+
+Но как же нам создать кучу объектов?
+Для таких целей - обычно создают фабрику объектов
+
+Давайте сделаем соответсвующую фикстуру
+
+from model_bakery import baker
+
+@pytest.fixture()
+def message_factory():
+    def factory(*args, **kwargs):
+        return baker.make(Message, *args, **kwargs)
+
+    return factory
+
+Эта фикстура - очень похожа на декоратор - так как возвращает функцию
+
+И теперь можно вызвать эту функцию с параметрами _quantity - указывает - сколько сообщений создать
+
+messages = message_factory(_quantity=10)
+
+В итоге перепишем нашу функцию
+
+@pytest.mark.django_db
+def test_get_message(client, user, message_factory):
+    # Arrange - подготовка данных
+    # User.objects.create_user('admin')
+    messages = message_factory(_quantity=10) # Тут создадим 10 сообщений
+    # Act - тестируемый функционал
+    response = client.get('/messages/')
+    # Assert - проверка
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == len(messages) # Тут проверяем количество сообщений
+
+всё успешно проходит
+
+теперь проверим - что наши сообщения совпадает с сообщениями в базе данных
+для этого нам нужно пробежаться по всем месаджам из даты
+
+@pytest.mark.django_db
+def test_get_message(client, user, message_factory):
+    # Arrange - подготовка данных
+    # User.objects.create_user('admin')
+    messages = message_factory(_quantity=10)
+    # Act - тестируемый функционал
+    response = client.get('/messages/')
+    # Assert - проверка
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == len(messages)
+    # assert data[0]['text'] == 'test'
+    for i, m in enumerate(data):
+        assert m['text'] == messages[i].text
+
+Всё работает - данные генерируются - тесты проходят
+
+--------
+
+Покрытие кода тестами
+
+Данная метрика - даёт нам понимание - сколько было затронуто строк кода при тестах - давайте посмотрим какие есть средства - для автоматизации
+этой метрики
+
+Первым делом - установим нужную библиотеку
+
+pip install pytest-cov
+
+Теперь нам нужно создать файл в корне проекта
+
+.coveragerc
+
+И пишем в нём следующие данные
+ 
+[run]
+omit=tests/*,.venv/*
+
+Тут мы указываем какие файлы мы не проверяем на покритые тестами
+в данном случае - сами тесты мы не покрываем тестами и наши библиотеки в папке venv
+
+теперь в консоли можем запустить и посмотреть что да как
+
+pytest --cov=.
+
+И увидем информацию
+
+Увидим - что у нас всё же остались лишние файлы которые не нужно проверять
+Давайте их уберём
+
+[run]
+omit=tests/*,.venv/*,manage.py,drf_test/*,*tests.py
+
+Теперь увидим - что наш код весь покрыт тестами
+Помимо консольного вывода - можно сгенерировать и html отчёт
+
+pytest --cov=. --cov-report=html
+
+В итоге у нас сгенерируется папка htmlcov
+И в итоге там увидем файл index.html
+
+Очень важно поддерживать тесты в актуальном состоянии
+
+Тестирование – неотъемлемая часть разработки.
+
+Во многих компаниях есть требования по покрытию кода тестами. Например, нельзя, чтобы покрытие тестами опускалось менее 80% 
+от числа строк кода в проекте.
+
+В Django есть стандартный модуль для тестирования приложений, но он использует unittest.
+
+Подробнее о написании и запуске тестов в документации:
+docs.djangoproject.com.../overview/
+
+pytest значительно мощнее и удобнее, рекомендуется использовать его. При этом вы не теряете доступные библиотеки для тестирования Django, 
+заменяется лишь стандартный test runner (модуль, который запускает и выполняет тесты).
 
