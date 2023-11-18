@@ -98,7 +98,7 @@ def list_person(request):
     persons = [f'{person.id}: {person.name}, {person.car}' for person in person_objects]
     return HttpResponse('<br>'.join(persons))
 
-Работает, но что если мы хотим в обратную сторону? По автомабилю узнать владельца
+Работает, но что если мы хотим в обратную сторону? По автомобилю узнать владельца
 Для этого нужно в модель добавить специальный объект
 
 В models в Person добавим этому полю свойство related_name
