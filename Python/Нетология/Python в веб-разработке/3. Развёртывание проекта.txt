@@ -1,0 +1,245 @@
+Здесь будет решать проблемы из прошлого урока.
+И сделаем так - чтоб проект работал более безопасно
+
+План занятия:
+1. Связывание хостинга файлов и запуска веб-приложения
+2. Использование различных дополнительных файлов для работы веб-приложения
+3. Работа со статикой
+4. Деплой на собственном сервере
+5. Деплой на платформах
+
+Создадим - наш сервер
+Сделаем 
+sudo apt update
+
+также не забываем создать пользователя и переключиться на него - так как по root - работать небезопасно
+
+adduser fword
+usermod fword -aG sudo
+su fword
+
+затем установим - всё что нам нужно
+
+sudo apt install python3-venv python3-pip postgresql nginx
+
+nginx - специальный engine - с помощью которого - будет развёртывать наш проект
+
+запустим наш сервис после установки
+
+sudo systemctl start nginx
+
+и проверим что запустился
+
+sudo systemctl status nginx
+
+Теперь если в браузере ввести наш ip - то увидем картину
+
+Welcome to nginx!
+
+теперь копируем джанго проект
+
+git clone
+
+и устанавливаем окружение
+
+python3 -m venv env
+source env/bin/activate
+
+и теперь устанавливаем
+
+также создаём нашу бд
+для этого
+
+sudo su postgres
+psql
+
+ALTER USER postgres WITH PASSWORD '123';
+CREATE DATABASE my_database;
+
+\q
+exit
+
+Мы взяли проект - где данные берутся из переменных окружения - создадим данный файл с помощью nano
+
+nano .env
+
+делаем миграции - и затем запускаем сервер
+
+python manage.py runserver 0.0.0.0:8000
+
+и пробуем зайти на сервер
+
+и теперь мы дошли до той самой точки с прошлого урока где мы увидели проблемы
+например - если сервер наш упадёт - то всё надо его чинить и работа нашего сайта остановиться - не круто
+
+manage.py runserver - используется только в разработке, но не для продакшена, так как видим он уже имеет кучу проблем
+
+одно из решение - использоваться
+
+webserver + wsgi - он поддерживает больше подключений - может работать на фоне
+webserver + asgi - это для асинхронных проектов
+облачное решение - лучшее решение
+
+мы будем использовать nginx
+
+управление nginx:
+
+nginx -s сигнал
+
+сигналы:
+stop - быстрое завершение
+quit - плавное завершение
+reload - перезагрузка конфига
+reopen - переоткрытие лог-файлов
+
+и для того чтоб развёртывать с помощью него проекты - нужен конфигурационный файл nginx
+
+nginx - использует wsgi-сервер
+
+для python - часто используется wsgi-сервер под названием gunicorn
+ещё есть проблема - что под нашим созданным пользователем - сразу мы подключиться не можем
+давайте настроим данное подключение
+это нужно сделать под root
+перейдём в конфиг
+
+nano /etc/ssh/sshd_config
+
+и в этом файле - раскоментируем строчку
+
+PasswordAutentification Yes
+
+И перезапустим sshd
+
+sudo systemctl restart sshd
+
+затем выходим с сервера и пытаемся под своим пользователем войти
+
+ssh fword@ip_адресс
+
+получилось
+
+теперь переходим в папку с проектом и вновь активируем виртуальное окружение
+
+source env/bin/activate
+
+а затем установим gunicorn
+
+pip install gunicorn
+
+и теперь запустим сервер - с помощью gunicorn
+
+gunicorn -b 0.0.0.0:8000 stocks_products.wsgi
+
+но теперь - у нас пропала статика
+её нужно настроить
+
+и мы запустили - этот сервер руками
+давайте исправим это чтоб не нужно было постоянно запускать сервер
+
+нам нужно создать для этого так называемый демон
+
+sudo nano /etc/systemd/system/gunicorn.service
+
+в файле - у нас будет три раздела
+
+[Unit]
+[Service]
+[Install]
+
+Вот такой файл настроек - у нас получится по итогу
+
+[Unit]
+Description=Service for gunicorn
+After=network.target
+
+[Service]
+User=fword
+Group=www-data
+WorkingDirectory=/home/fword/django_cicd
+ExecStart=/home/fword/django_cicd/env/bin/gunicorn --workers 3 -b unix:/home/fword/django_cicd/stocks_products/project.sock stocks_products.wsgi
+
+[Install]
+WantedBy=multi-user.target
+
+теперь выполняем следующие команды
+
+sudo systemctl start gunicorn
+sudo systemctl enable gunicorn
+
+и проверяем
+
+sudo systemctl status gunicorn
+
+если настройки были записаны верны - то будет статус active
+
+и теперь в папку проекта должен появиться файл
+
+project.sock
+
+и теперь нужно создать ещё одну настройку про которую мы говорили выше для nginx
+
+sudo nano /etc/nginx/sites-available/project
+
+в данном случае - наш файл будет содержать следующие настройки
+
+server {
+ listen 80;
+ server_name 79.174.82.135;
+
+ location /static/ {
+   root /home/adilet/django_cicd;
+ }
+
+ location / {
+  include proxy_params;
+  proxy_pass http://unix:/home/fword/django_cicd/stocks_products/project.sock;
+ }
+}
+
+и теперь переносим наши настройки
+
+sudo ln -s /etc/nginx/sites-available/project /etc/nginx/sites-enabled/
+
+и перезапускаем nginx
+
+sudo systemctl restart nginx
+sudo systemctl status nginx
+
+теперь перейдя по ip адрессу - мы попадём на сайт - но получим ошибку
+
+502 ошибка
+
+попробуем исправить
+
+переходим в главный конфиг nginx
+
+sudo nano /etc/nginx/nginx.conf
+
+и там в первой строке юзера www-data - меняем на своего
+
+и теперь перейдя по ip нашего сайта - мы попадём на наш сайт
+
+но вся равно статики не хватает - потому что нужно положить её в папку - в которой указали настройки
+
+в нашем джанго приложении в settings.py - нужно добавить 
+1. в INSTALLED_APPS - django.contrib.staticfiles 
+2. указать STATIC_URL = '/static/'
+3. STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+и указать - статик рут
+
+и ввести команду 
+python manage.py collectstatic
+
+и также саму папку static - нужно создать
+но на самом деле - наша команда
+
+python3 manage.py collectstatic
+
+уже создаст эту папку со статикой
+
+и теперь на нашем сайте - статика должна появиться
+
+и теперь - нам не нужно писать порт и перезапускать сервер при ошибках
+
+
