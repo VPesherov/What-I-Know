@@ -1,0 +1,6 @@
+https://cloud.itstep.org/ru/blog_1/non-obvious-errors-in-python-pandas-when-working-with-big-data-big-data
+
+Пример кода - чтоб столбец с названием код считывался типом object
+Все типы можно увидеть в ссылке выше
+
+data_table = pd.read_excel(path_to_file, skiprows=6, dtype={'Код': 'object'}, na_values='')
