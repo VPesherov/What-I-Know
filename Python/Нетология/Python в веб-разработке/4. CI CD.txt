@@ -1,0 +1,359 @@
+Теперь попробуем автоматизировать наше развёртывание, то есть то что делали в прошлый разы - автоматизировать.
+С этим нам и поможет такая технология как 
+
+CI/CD - постоянная интеграция и постоянная поставка кода на сервер
+
+План занятия:
+1. Процессы
+2. Сервисы
+3. Настройка сервера
+4. GitHub action
+5. Переменные окружения
+6. Развёртывание на сервере
+
+CI/CD (continuous integration/continuous delivery) - комплекс мероприятий для непрерывной интеграции и доставки программного обеспечения.
+Одна из задач DevOps - настроить архитектуру для всех CI/CD-процессов.
+
+Разработчику полезно владеть базовыми DevOps-навыками, чтобы запускать свои проекты для демонстрации.
+
+Рисунок 1. - как выглядит процесс разработки
+
+Есть ещё различные схемы взаимодействия с гитхабом
+Одна из них 
+
+Workflow - есть различные схемы взаимодействия процессов разработки и поставки:
+Centalized, forking, gitflow, github, gitlab и другие
+
+Схему выбирают взависимости от целей команды
+
+Например, по триггеру - приложение разворачивается в разных окружениях:
+
+-production - финальная версия из основной ветки
+-stage - промужеточная версия для QA и бизнес-тестов
+-develop - сырая версия из ветки с разработкой
+
+Gitflow - есть основная ветка - где основной проект, и ветка разработки - где происходит только разработка. И только при накоплении
+достаточного количества изменений - мы сливаем всё в основную ветку. Ещё иногда бывают и промежуточные версии - они чаще всего
+используются для тестов
+
+Сервисы интеграции и развёртки
+
+Есть различные инструменты интеграции. Все они основаны - на общем принципе конфигурации. По факту целевого события скрипт интеграции
+запускает команду для запуска тестов или сборки.
+
+Инструменты интеграции, встроенные в git-хостинги:
+GitHub Actions
+GitLab Pipelines
+Bitbucket Pipelines
+
+Специализированные инструменты интеграции, подключаемые к хостингу:
+CircleCI
+Semaphore CI
+Jenkins
+
+На примере Django-проекта после коммита изменений на внешнем репозитории (GitHub) можно автоматически запускать тесты и при успешных
+проверках разворачивать изменения на сервере.
+Для этого нужно:
+1. Создать репозиторий
+2. Отправлять в репозиторий исходный код (с валидными тестами и линтерами)
+3. Настроить CI на GitHub для запуска проверок, чтобы убедиться, что тесты проходят и линтер не ругается
+4. Создать Docker-образ для публикации приложения
+5. Развернуть Docker-образ на сервере
+
+Альтернатива
+Для некоторых связок есть упрощённый вариант. У GitHub + VPS + Django удобный механизм интеграции.
+
+1. Создать репозиторий
+2. Отправить в репозиторий исходный код(с валидными тестами и линтерами)
+3. Настроить CI на GitHub для запуска проверок, чтобы убедиться, что тесты проходят и линтер не ругается.
+4. Развернуть проект на сервере
+
+Этапы настройки сервера
+
+Подключаемся к нашему серверу под root
+
+ssh root@ip_address
+
+создаём пользователся
+
+adduser fword
+
+даём ему права
+
+usermod fword -aG sudo
+
+и переходит на него
+
+su fword
+
+и теперь будем скачивать всё необходимое
+
+но вначале обновимся
+
+sudo apt update
+
+и теперь устанавливаем нужные пакеты
+устанавливаем venv для python, pip, postgresql, nginx, expect - для автоматического развёртывания
+
+sudo apt install python3-venv
+sudo apt install python3-pip
+sudo apt install postgresql
+sudo apt install nginx
+sudo apt install expect
+
+Теперь развернём наш проект - для начала развернём его руками, а затем только будем автоматизировать развёртывание
+
+Теперь копируем репозиторий
+
+Создаём в нашем проекте venv
+
+python3 -m venv env
+
+активируем env
+
+source env/bin/activate
+
+и устанавливаем в него пакеты
+
+теперь создадим бд
+подключаемся к пользователю postgres
+
+sudo su postgres
+psql
+
+задаём ему пароль
+
+ALTER USER postgres WITH PASSWORD '123';
+
+и создаём БД
+
+create database netology_stocks_products;
+
+добавили в settings.py в allowed_hosts - наш ip
+
+nano stocks_products/settings.py
+
+теперь делаем миграции
+
+python manage.py migrate
+
+и запустим сервер
+
+python manage.py runserver 0.0.0.0:8000
+
+работает!
+
+теперь устанавливаем gunicorn
+
+pip install gunicorn
+
+и запускаем теперь сервер с помощью gunicorn
+
+gunicorn -b 0.0.0.0:8000 stocks_products.wsgi
+
+Сервер также работает, но пропала статика - с этим разберёмся попозже
+
+теперь разберёмся с nginx
+запускаем его
+
+sudo systemctl start nginx
+
+теперь если перейти по нашему ip без порта - увидим надпись
+Welcome to nginx!
+
+теперь надо настроить файл gunicorn
+создадим файл конфигураций
+
+sudo nano /etc/systemd/system/gunicorn.service
+
+с такими настройками
+
+[Unit]
+Description=Gunicorn.sevice
+After=network.target
+
+[Service]
+User=fword
+Group=www-data
+WorkingDirectory=/home/fword/netology_CRUD_IN_DRF/stocks_products
+ExecStart=/home/fword/netology_CRUD_IN_DRF/stocks_products/env/bin/gunicorn --workers 3 --bind unix:/home/fword/netolog>
+[Install]
+WantedBy=multi-user.target
+
+И с помощью трёх команд - проверяем
+
+sudo systemctl start gunicorn
+sudo systemctl enable gunicorn
+sudo systemctl status gunicorn
+
+должен быть статус activate
+
+теперь настраиваем nginx
+
+sudo nano /etc/nginx/sites-available/project
+
+с такими настройками
+
+server {
+        listen 80;
+        server_name 79.174.82.135;
+        location /static/ {
+                root /home/fword/netology_CRUD_IN_DRF/stocks_products;
+        }
+        location / {
+                include proxy_params;
+                proxy_pass http://unix:/home/fword/netology_CRUD_IN_DRF/stocks_products/stocks_products/project.sock;
+        }
+}
+
+выполняем команду
+
+sudo ln -s /etc/nginx/sites-available/project /etc/nginx/sites-enabled/
+
+делаем рестарт
+
+sudo systemctl restart nginx
+
+и смотрим статус
+
+sudo systemctl status nginx
+
+и меняем пользователя в конфиге
+
+sudo nano /etc/nginx/nginx.conf
+
+меняем первую строчку!!
+
+и ещё раз перезапустим
+
+sudo systemctl restart nginx
+
+сервер работает
+
+отсалось настроить статику
+
+python manage.py collectstatic
+
+И только сейчас мы наконец переходим к автоматизации))
+Но автоматизация - решит проблемы, например то - что при даже минимальных имзенениях - нам нужно будет всё перезапускать - это не круто
+
+К примеру
+
+Мы что-то имзенили и теперь наши действия
+
+-Сделать add
+-Сделать commit
+-Сделать push
+
+Как их залилили теперь нам нужно протащить их на сервер
+Для этого - нужно будет зайти на сервер
+
+ssh fword@ip
+
+затем взять изменения - сделать миграции и тд
+попробуем всё это автоматиизировать
+
+Будем использовать GitHub actions 
+Он сканирует наш каталог .github/workflows на наличие скриптов в yml формате, соответсвующий шаблону.
+
+На вкладке actions проктеа git-hub доступны стандартные шаблоны для типовых проектов, например Python application.
+
+jobs - перечень задач(builds, tests)
+branches - перечень веток по действию которых - запускать интеграцию
+steps - список действий для интеграции
+
+первое что нужно сделать в нашем проекте - создать директорию 
+назвать её - .github
+создаём её в корне проекта - где наш файл manage.py
+
+и внутри неё - директорию workflows
+и там уже создать файл с любым названием, но с раширением .yml
+например ci.yml
+
+и внутри мы и будем описывать наш CI процесс
+
+с такими настройками для нашего проекта netology_CRUD_IN_DRF
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  tests:
+    runs-on: ubuntu-22.04
+    env:
+      TEST: "test"
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_DB: "netology_stocks_products"
+          POSTGRES_USER: "postgres"
+          POSTGRES_PASSWORD: "123"
+        ports:
+          - 5432:5432
+        options:
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Проверка репозитория на наличие изменений
+        uses: actions/checkout@v3
+
+      - name: Установка python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'
+
+      - name: Установка зависимостей
+        run: pip install -r stocks_products/requirements.txt
+
+      - name: Линтинг
+        run: flake8 stocks_products/stocks_products --exclude=settings.py
+
+      - name: Тестирование
+        run: python3 stocks_products/manage.py test logistic
+        env:
+          TEST: "test"
+
+теперь перейдём к развёртыванию на сервере
+
+для этого нужно создать два файла
+
+deploy.sh
+
+с нашими командами
+
+#!/bin/bash
+cd /home/fword/netology_CRUD_IN_DRF
+git pull
+cd stocks_products
+source env/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py collectstatic
+sudo systemctl restart gunicorn
+
+и файл с ответами на команды - так как наш сервер не умеет отвечать на команды сам - мы задаём ему файл с ответами
+
+deploy.exp
+
+#!/bin/bash/expect
+spawn /home/fword/netology_CRUD_IN_DRF/deploy.sh
+expect "Type 'yes' to continue, or 'no' to cancel:\r"
+send -- "yes\r"
+expect "password for"
+send -- '123'
+expect eof
+
+и готово - теперь в нашем run надо лишь только изменить файл ci.yml
+
+- name: Deploy on server
+        uses: appleboy/ssh-action@master
+        with:
+          host: "79.174.82.135"
+          username: "fword"
+          password: "123"
+          script: expect /home/fword/netology_CRUD_IN_DRF/deploy.exp
+

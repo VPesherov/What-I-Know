@@ -228,6 +228,8 @@ sudo nano /etc/nginx/nginx.conf
 
 и указать - статик рут
 
+и также импортировать os
+
 и ввести команду 
 python manage.py collectstatic
 
