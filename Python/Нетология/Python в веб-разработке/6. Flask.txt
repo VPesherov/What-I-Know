@@ -1,0 +1,531 @@
+Возникает первый вопрос
+Зачем нам изучать фласк если мы изучали джанго?
+Для общего кругозора и разнообразия.
+
+Flask vs Django
+Плюсы Flask
+-гибкость
+-скорость
+-мало магии
+
+Плюсы Django
+-все включено
+-скорость разработки
+
+Сценарии использования Flask
+-Микросервисы
+-Небольшие API
+-МОСК API
+
+И ещё раз надо подчеркнуть - что здесь мы пишем не сайты, а пишем бэкэнды по стандарту REST API
+Вспомни что обычно выполняет методы в методологии REST API
+GET - получить данные
+POST - вставить данные в базу
+PUT - полностью изменить запись в базе
+PATCH - частично изменить запись в базе
+DELETE - удалить запись из базы
+
+И вспомним HTTP статусы
+
+200 - ок
+400 - неправильный формат запроса
+401 - ошибка авторизации
+404 - нет такой записи в базе
+500 - внутреняя ошибка
+
+Из чего вообще состоит запрос?
+
+uri(query string)
+body
+headers
+cookies
+
+Минимальное приложение на фласке
+
+from flask import Flask
+
+app = Flask('app')
+
+if __name__ == '__main__':
+    app.run(host='127.0.0.1', port=5000)
+
+Теперь перейдём в pycharm и разберёмся с flask на практике
+Для начала установим flask
+
+pip install flask
+
+и также установим библиотеку requests для отправки запросов
+
+pip install requests
+
+создадим теперь два файлика в нашем проекте
+
+server.py - для принятия запросов
+client.py - для отправки запросов
+
+Прописываем в server.py стандартное приложение
+
+from flask import Flask
+
+app = Flask('app')
+
+app.run()
+
+и запускаем его например через консоль
+
+python server.py
+
+теперь попробуем отправить наш запрос на запущенный сервер
+перейдём в client - и напишем с помощью библиотеки requests - запрос
+
+import requests
+
+response = requests.get(r"http://127.0.0.1:5000/")
+print(response.status_code)
+print(response.text)
+
+Пришёл 404 - потому что мы к url - не привязали никакой вьюхи
+Давайте её напишем
+Во фласке вьюхой могут быть как классы так и функции
+
+Напишем мы вот такую вью
+
+def hello_world():
+    response = jsonify({"hello": "world"})
+    return response
+
+jsonify - метод из фласка
+
+и теперь привяжем нашу view - какому-либо url
+
+app.add_url_rule("/hello/world", view_func=hello_world)
+
+и в клиенте обратимся по нашему созданному адрессу
+
+import requests
+
+response = requests.get(r"http://127.0.0.1:5000/hello/world")
+print(response.status_code)
+print(response.text)
+
+получили статус 200 и получили ответ
+
+теперь давайте попробуем в url - нести дополнительную информацию через привычный нам словарик
+например
+
+http://127.0.0.1:5000/hello/world?name=John&age=20
+
+то есть запросы выглядят так
+
+response = requests.get(r"http://127.0.0.1:5000/hello/world?name=John&age=20")
+
+но по факту нам надо вложить не только переменные, а также json и headers
+можно это сделать так
+и сделаем это через пост запрос
+
+response = requests.post(
+    r"http://127.0.0.1:5000/hello/world?name=John&age=20",
+    json={'key_1': 'value_1', 'key_2': 'value_2'},
+    headers={"Content-Type": "application/json"}
+)
+
+и скажем серверу что мы ожидаем только post запрос
+добавим такую строку
+
+app.add_url_rule("/hello/world", view_func=hello_world, methods=["POST"])
+
+Это считается хорошей практикой - когда одна функция - может обрабатывать только один метод
+
+и немного перепишем нашу view - чтоб она могла принимать запросы
+для этого импортируем из flask - request
+
+from flask import request
+
+и напишем такую view
+
+
+def hello_world():
+    json_data = request.json
+    print(f'{json_data}')
+    qs = request.args
+    print(f'{qs=}')
+    headers = request.headers
+    print(f'{headers=}')
+    response = jsonify({"hello": "world"})
+    return response
+
+где возвращаются json, args и headers
+запустим и увидим что всё ок
+
+с помощью docker-compose создадим нашу бд
+
+создадим файл docker-compose.yml с таким содержимым
+
+
+version: "3.9"
+services:
+  db:
+    image: postgres:14.3-alpine3.15
+    ports:
+      - "5431:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: test
+
+и запустим его
+docker-compose up
+
+теперь опишем такой класс для наших методов
+from flask import Flask, jsonify, request, MethodView
+
+class UserView(MethodView):
+
+    def get(self):
+        pass
+
+    def post(self):
+        pass
+
+    def patch(self):
+        pass
+
+    def delete(self):
+        pass
+
+и зададим ему url
+
+user_view = UserView.as_view("user")
+app.add_url_rule("/user/", view_func=user_view, methods=["POST"])
+app.add_url_rule("/user/<int:user_id>", view_func=user_view, methods=["GET", "PATCH", "DELETE"])
+
+теперь сделаем модель для данных
+создаём файл models.py со следующим кодом
+
+import atexit
+import datetime
+
+from sqlalchemy import create_engine, String, DateTime, func
+from sqlalchemy.orm import sessionmaker, DeclarativeBase, Mapped, mapped_column
+
+# задаём данные для подключения к бд
+POSTGRES_USER = 'postgres'
+POSTGRES_PASSWORD = '123'
+POSTGRES_DB = 'test'
+POSTGRES_HOST = '127.0.0.1'
+POSTGRES_PORT = '5431'
+
+# создаём подключение к бд
+PG_DSN = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
+engine = create_engine(PG_DSN)
+#создаём сессию
+Session = sessionmaker(bind=engine)
+
+# это функция закроет подключение, если оно не закроется само
+atexit.register(engine.dispose)
+
+# наши модели/таблицы
+class Base(DeclarativeBase):
+    pass
+
+
+class User(Base):
+    __tablename__ = "app_users"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
+    password: Mapped[str] = mapped_column(String(100), nullable=False)
+    registration_time: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=func.now())
+
+и для создания в конец добавим
+
+Base.metadata.create_all(bind=engine)
+
+теперь вернёмся в наш server.py
+и сделаем импорт нужных нам модулей
+
+from models import Session, User
+
+и в нашем классе перепишем метод get
+
+    def get(self, user_id):
+        with Session() as session:
+            user = session.get(User, user_id)
+            return jsonify(
+                {
+                    'id': user.id,
+                    'name': user.name,
+                    'registration_time': user.registration_time.isoformat(),
+                 }
+            )
+
+переделаем метод post
+
+    def post(self):
+        with Session() as session:
+            user = User(**request.json)
+            session.add(user)
+            session.commit()
+        return jsonify(
+            {
+                'id': user.id,
+                'name': user.name,
+                'registration_time': user.registration_time.isoformat(),
+            }
+        )
+
+
+метод patch
+
+    def patch(self, user_id):
+        with Session() as session:
+            user = session.get(User, user_id)
+            for key, value in request.json.items():
+                setattr(user, key, value)
+            session.commit()
+        return jsonify(
+            {
+                'id': user.id,
+                'name': user.name,
+                'registration_time': user.registration_time.isoformat(),
+            }
+        )
+
+
+метод delete
+
+
+    def delete(self, user_id):
+        with Session() as session:
+            user = session.get(User, user_id)
+            session.delete(user)
+            session.commit()
+            return jsonify(
+                {
+                    "status": "deleted",
+                }
+            )
+
+у этого кода очень много минусов
+например - копипаст одних и тех же логик работы
+нет проверок на успех или нет и тд
+но давайте просто пока что проверим работоспособность нашего сервиса
+код client.py
+
+import requests
+
+# response = requests.post(
+#     r"http://127.0.0.1:5000/hello/world?name=John&age=20",
+#     json={'key_1': 'value_1', 'key_2': 'value_2'},
+#     headers={"Content-Type": "application/json"}
+# )
+# print(response.status_code)
+# print(response.json())
+
+# создадим пользователя по api
+# response = requests.post(
+#     r"http://127.0.0.1:5000/user/",
+#     json={'name': 'new1', 'password': 'password1'},
+# )
+#
+# print(response.status_code)
+# print(response.json())
+
+# возьмём только что созданного пользователя с помощью get
+
+response = requests.get(
+    r'http://127.0.0.1:5000/user/12',
+)
+print(response.status_code)
+print(response.json())
+
+# patch запрос
+
+response = requests.patch(
+    r'http://127.0.0.1:5000/user/12',
+    json={'name': 'new_name'},
+)
+print(response.status_code)
+print(response.json())
+
+# delete запрос
+response = requests.delete(
+    r'http://127.0.0.1:5000/user/12',
+)
+print(response.status_code)
+print(response.json())
+
+теперь немного перепишем наш код чтоб исправить некоторые косяки например в модель добавим метод который возвращает знакомый нам словарь
+
+class User(Base):
+    __tablename__ = "app_users"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
+    password: Mapped[str] = mapped_column(String(100), nullable=False)
+    registration_time: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=func.now())
+
+    @property
+    def dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'registration_time': self.registration_time.isoformat(),
+        }
+
+и теперь будем обращаться уже к методу user.dict
+также мы постоянно открываем/закрываем сэссию - давайте подредачим это и не будем постоянно это делать
+у фласка есть декораторы которые срабатывают до запроса и после запроса
+
+@app.before_request
+def before_request():
+    session = Session()
+    request.session = session
+
+
+@app.after_request
+def after_request(response):
+    request.session.close()
+    return response
+
+
+и теперь наши методы можно переписать вот так
+
+    def get(self, user_id):
+        user = request.session.get(User, user_id)
+        return jsonify(user.dict)
+
+также создадим функцию которая берёт юзера по id - так как мы это действие тоже часто выполняем
+
+def get_user_by_id(user_id: int):
+    user = request.session.get(User, user_id)
+    return user
+
+теперь например наш гет выглядит так
+
+    def get(self, user_id):
+        user = get_user_by_id(user_id)
+        return jsonify(user.dict)
+
+но вот ещё проблема - мы никак не обрабатываем отсутсвия пользователя
+да можно добавить if, но во фласке можно сразу выкидывать ошибку не выполняя часть кода до конца
+для этого нужна создать наш собственный класс ошибок
+
+всё это будет выглядить так
+
+class HttpError(Exception):
+    def __init__(self, status_code: int, description: str):
+        self.status_code = status_code
+        self.description = description
+
+
+@app.errorhandler(HttpError)
+def error_handler(error: HttpError):
+    response = jsonify({"error": error.description})
+    response.status_code = error.status_code
+    return response
+
+
+def get_user_by_id(user_id: int):
+    user = request.session.get(User, user_id)
+    if user is None:
+        raise HttpError(404, "user not found")
+    return user
+
+и теперь будем получать ошибку если пользователь остутсвует в нашей бд
+теперь сделаем проверку правильности данных в post методе
+в этом нам поможет библиотека pydantic
+
+создадим отдельный файл schema.py
+с таким кодом
+
+import pydantic
+from abc import ABC
+from typing import Optional
+
+# с помощью ABC - указываем что этот класс абстрактный 
+class AbstractUser(pydantic.BaseModel, ABC):
+    name: str
+    password: str
+
+    # перенесли этот метод из кода ниже сюда - чтоб не повторяться
+    @pydantic.field_validator("password")
+    @classmethod
+    def secure_password(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError(f"Minimal length = 8")
+        return v
+
+
+# создание пользователя
+class CreateUser(AbstractUser):
+    # нам должны прийти имя - строка и пароль - строка
+    name: str
+    password: str
+
+    # # добавим проверку на минимальную длину пароля
+    # # первый декоратор - нужен чтоб мы проверяли только поле password
+    # # второй чтоб не надо было принимать self
+    # @pydantic.field_validator("password")
+    # @classmethod
+    # def secure_password(cls, v: str) -> str:
+    #     if len(v) < 8:
+    #         raise ValueError(f"Minimal length = 8")
+    #     return v
+
+
+# обновление пользователя
+class UpdateUser(AbstractUser):
+    # нам могут прийти одно из этих полей или вообще не прийти
+    # поэтому ставим Optional и ставим значение по умолчанию None
+    name: Optional[str] = None
+    password: Optional[str] = None
+
+    # # добавим проверку на минимальную длину пароля
+    # # первый декоратор - нужен чтоб мы проверяли только поле password
+    # # второй чтоб не надо было принимать self
+    # @pydantic.field_validator("password")
+    # @classmethod
+    # def secure_password(cls, v: str) -> str:
+    #     if len(v) < 8:
+    #         raise ValueError(f"Minimal length = 8")
+    #     return v
+
+и добавляем в server.py
+
+
+def validate(schema_class, json_data):
+    try:
+        return schema_class(**json_data).dict(exclude_unset=True)
+    except pydantic.ValidationError as er:
+        error = er.errors()[0]
+        error.pop("ctx", None)
+        raise HttpError(400, error)
+
+и теперь наш post и patch выглядят так
+
+    def post(self):
+        json_data = validate(CreateUser, request.json)
+        user = User(**json_data)
+        add_user(user)
+        print(user.id, user.name, user.registration_time)
+        return jsonify(user.dict_)
+
+    def patch(self, user_id):
+        json_data = validate(UpdateUser, request.json)
+        user = get_user_by_id(user_id)
+        for key, value in json_data.items():
+            setattr(user, key, value)
+        add_user(user)
+        return jsonify(user.dict_)
+
+также написали add_user который проверяет есть ли у нас пользователь в бд или нет
+
+def add_user(user: User):
+    try:
+        request.session.add(user)
+        request.session.commit()
+    except IntegrityError:
+        raise HttpError(400, "user arleadt exists")
+
+
+
+
