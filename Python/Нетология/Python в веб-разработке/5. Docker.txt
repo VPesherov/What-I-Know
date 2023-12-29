@@ -199,11 +199,21 @@ docker build -f django_dockerfile -t my_django:v1 .
 
 docker run my_django:v1
 
+Иногда это не будет работать - и нужно будет пробросить порты - запустить докер нужно будет по другому
+
+docker run --name my_django_server -p 8000:8000 my_django:v1
+
+или в фоновом режиме
+
+docker run --name my_django_server -p -d 8000:8000 my_django:v1
+
 хорошая ссылка
 
 https://fixmypc.ru/post/sozdanie-i-zapusk-konteinera-docker-s-django-postgressql-gunicorn-i-nginx/?ysclid=lqidfyzdg5919609096
 
+и эта ссылка для настройки докера
 
+https://habr.com/ru/companies/ruvds/articles/440660/
 
 
 
