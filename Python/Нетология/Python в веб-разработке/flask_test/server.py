@@ -56,6 +56,7 @@ def add_user(user: User):
     except IntegrityError:
         raise HttpError(400, "user arleadt exists")
 
+
 class UserView(MethodView):
 
     def get(self, user_id):
