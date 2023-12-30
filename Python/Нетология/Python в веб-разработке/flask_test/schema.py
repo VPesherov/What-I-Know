@@ -2,6 +2,7 @@ import pydantic
 from abc import ABC
 from typing import Optional
 
+
 # с помощью ABC - указываем что этот класс абстрактный
 class AbstractUser(pydantic.BaseModel, ABC):
     name: str
