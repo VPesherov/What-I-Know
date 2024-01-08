@@ -1,0 +1,343 @@
+Что такое Asyncio и зачем это нужно?
+Он нужен для оптимизации. Просто заставить некоторые операции работать быстрее.
+А именно операции связанные в IO - Input-Output (Ввод вывод)
+Полный список IO операций:
+
+1. Чтение/запись в файл
+2. Запись/чтение в/из stdout/stdin
+3. Сетевые
+
+Пример: запросить данные из БД и обработать - как происходит:
+
+Шкала времени
+------------------------------------------------>
+
+запрос -> ждём -> работаем -> запрос -> ждём -> работаем
+
+и тд и эти время запросов и ожидания могут быть разными
+и очень хотелось бы например избавиться от ожиданий
+
+Есть вариант обработать запросы в мультипотоках
+
+запрос1 -> ожидание -> работа
+запрос2 -> ожидание -> работа
+
+Но есть проблемы, например - количество потоков очень ограничено, потоки потребляют ресурсы или потоко не всегда безопасны
+
+Но попробуем избавиться от ожиданий с помощью event loop (цикл событий)
+Можно сделать так
+Отправляем кучу запросов сразу и не дожидаемся ответа -> а затем уже в цикле проверяет и смотрим вернулся ли ответ на данный запрос
+
+Перейдём к практике - для начала будем по очереди отправлять запросы по API в режиме построчного выполнения кода
+
+Установим requests
+И напишем такой код
+
+import datetime
+
+import requests
+
+
+def get_person(person_id):
+    response = requests.get(f"https://swapi.py4e.com/api/people/{person_id}/")
+    return response.json()
+
+
+def main():
+    person_1 = get_person(1)
+    person_2 = get_person(2)
+    print(person_1['name'])
+    print(person_2['name'])
+
+
+if __name__ == '__main__':
+    start = datetime.datetime.now()
+    main()
+    print(datetime.datetime.now() - start)
+
+Получим вывод:
+
+Luke Skywalker
+C-3PO
+0:00:01.214935
+
+Это синхронный код - он работает строчкой застрочкой
+Теперь попробуем написать синхронный код
+
+Чтоб написать асинхронную функцию - нужно перед def поставить async
+
+Напишем простой пример
+
+async def get_person(person_id):
+    return 42
+
+
+response = get_person(1)
+print(response)
+
+Вывод должен быть 42, но нет в нашем случае он будет более интересный
+
+sys:1: RuntimeWarning: coroutine 'get_person' was never awaited
+<coroutine object get_person at 0x00000259BDBA4C40>
+
+На самом деле асинхронная функция - когда она вызывается - она не выполняется
+Она возвращает специальный объект - который называется coroutine
+
+Заставим наш код работать
+Чтоб асинхронная функция отработала - ей нужно ключевой слово await
+Но await - можно вызвать только лишь из другой асинхроннной функции
+То есть делаем main асинхронной функцией
+И потом запускаем main - с помощью библиотеку asyncio
+
+import asyncio
+
+
+async def get_person(person_id):
+    return 42
+
+
+async def main():
+    response = await get_person(1)
+    print(response)
+
+
+asyncio.run(main())
+
+Но проблема в том, что пока что у нас функция всё равно выполняется строчка за строчкой
+Давайте это решать
+main будет теперь выглядеть так
+
+async def main():
+    coro_1 = get_person(1)
+    coro_2 = get_person(2)
+    coro_3 = get_person(3)
+    coro_4 = get_person(4)
+    
+    result = await asyncio.gather(coro_1, coro_2, coro_3, coro_4)
+    print(result)
+
+
+Теперь попробуем снова поработать с API, но в случае Asyncio - с requests работать не получится - не будет выйгрыша по производительности
+Замена библиотеки requests - в данном случае будет библиотека aiohtts
+
+Теперь наша функция выглядит так
+
+async def get_person(person_id):
+    # открыли сессию
+    session = aiohttp.ClientSession()
+    # кинули запрос и пришёл объекта типа coroutine
+    coro = session.get(f"https://swapi.py4e.com/api/people/{person_id}/")
+    # обрабатываем coroutine
+    result = await coro
+    # затем json метод тоже вернёт coroutine
+    coro = result.json()
+    # обрабатываем coroutine
+    result = await coro
+    # закрываем сессию
+    await session.close()
+    return result
+
+и теперь замерим время работы
+
+import asyncio
+import aiohttp
+import datetime
+
+
+async def get_person(person_id):
+    # открыли сессию
+    session = aiohttp.ClientSession()
+    # кинули запрос и пришёл объекта типа coroutine
+    coro = session.get(f"https://swapi.py4e.com/api/people/{person_id}/")
+    # обрабатываем coroutine
+    result = await coro
+    # затем json метод тоже вернёт coroutine
+    coro = result.json()
+    # обрабатываем coroutine
+    result = await coro
+    # закрываем сессию
+    await session.close()
+    return result
+
+
+async def main():
+    coro_1 = get_person(1)
+    coro_2 = get_person(2)
+    coro_3 = get_person(3)
+    coro_4 = get_person(4)
+
+    result = await asyncio.gather(coro_1, coro_2, coro_3, coro_4)
+    print(result)
+
+
+start = datetime.datetime.now()
+asyncio.run(main())
+print(datetime.datetime.now() - start)
+
+# Вывод
+
+0:00:00.634847
+
+Теперь в main - можно даже сделать это списком
+прокрутить запросы в цикле а потом их обработать
+
+async def main():
+
+    coros = []
+    for i in range(1, 90):
+        coros.append(get_person(i))
+
+    result = await asyncio.gather(*coros)
+    print(result)
+
+Но смотрите в чём проблема - сейчас у нас 90 запросов, а если у нас будет несколько миллионов запросов?
+Это уже дудос атака
+
+В данном случае мы можем поразбивать наши запросы - например с помощью библиотеки
+
+more-itertools
+
+зададим некую константу - по которой будем разбивать наши элементы
+
+MAX_CHUNK = 5
+
+будем разбивать по 5 элементов
+
+Перепишем код вот так
+
+async def main():
+    coros = []
+    for people_id_chunk in chunked(range(1, 90), MAX_CHUNK):
+        coros = []
+        for people_id in people_id_chunk:
+            coros.append(get_person(people_id))
+        result = await asyncio.gather(*coros)
+        print(result)
+
+Теперь попробуем улучшить наш код
+Будем открывать сессию - один раз в нашем мейне
+
+async def main():
+    print('start')
+    # открыли сессию
+    session = aiohttp.ClientSession()
+    coros = []
+    for people_id_chunk in chunked(range(1, 90), MAX_CHUNK):
+        coros = []
+        for people_id in people_id_chunk:
+            coros.append(get_person(people_id, session))
+        result = await asyncio.gather(*coros)
+        print(result)
+    await session.close()
+
+
+И будем сразу await-ить функции
+
+async def get_person(person_id, session):
+    result = await session.get(f"https://swapi.py4e.com/api/people/{person_id}/")
+    result = await result.json()
+    return result
+
+И перепишем наш цикл в main
+
+async def main():
+    print('start')
+    # открыли сессию
+    session = aiohttp.ClientSession()
+    coros = []
+    for people_id_chunk in chunked(range(1, 90), MAX_CHUNK):
+        coros = [get_person(person_id, session) for person_id in people_id_chunk]
+        result = await asyncio.gather(*coros)
+        print(result)
+    await session.close()
+
+Теперь попробуем записать наши данные в БД
+
+Создадим бд с помощью docker-compose
+Создаём yml со следующим содержимым
+
+version: "3.9"
+services:
+  db:
+    image: postgres:14.3-alpine3.15
+    ports:
+      - "5431:5432"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "123"
+      POSTGRES_DB: "swapi"
+
+и создадим models.py
+и подключимся к нашей БД
+
+
+POSTGRES_PASSWORD = "123"
+POSTGRES_USER = "postgres"
+POSTGRES_DB = "swapi"
+POSTGRES_HOST = "localhost"
+POSTGRES_PORT = "5431"
+
+PG_DSN = f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
+
+установим sqlalchemy и asyncpg
+
+И создаём нашу БД по аналогии с Flask
+
+engine = create_async_engine(PG_DSN)
+Session = async_sessionmaker(engine, expire_on_commit=False)
+
+
+class Base(DeclarativeBase, AsyncAttrs):
+    pass
+
+
+class SwapiPeople(Base):
+    __tablename__ = "swapi_people"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    json: Mapped[dict] = mapped_column(JSON, nullable=True)
+
+Создадим функцию которая создаёт бд в нашем models
+
+async def init_db():
+    async with engine.begin() as conn:
+        # await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
+
+Вызовем её в main
+
+async def main():
+    await init_db()
+
+и также создадим функцию для вставки записей в бд
+
+async def insert_records(records):
+    records = [SwapiPeople(json=record) for record in records]
+    async with Session() as session:
+        session.add_all(records)
+        await session.commit()
+
+и изменим наш цикл в main
+
+    for people_id_chunk in chunked(range(1, 20), MAX_CHUNK):
+        coros = [get_person(person_id, session) for person_id in people_id_chunk]
+        result = await asyncio.gather(*coros)
+        # task - не блокирует дальнейшее выполнения кода
+        task = asyncio.create_task(insert_records(result))
+        print(result)
+
+create_task - нужен чтоб наша вставка не блокировала дальнейшую итерацию цикла
+
+и в конце добавим
+
+await task
+
+чтоб наши последнии задачи успели завершиться
+
+и в конце main -  мы добавим следующую строчку
+
+all_tasks_set = asyncio.all_tasks() - {asyncio.current_task()}
+await asyncio.gather(*all_tasks_set)
+
+чтоб все задачи завершились полностью
+
