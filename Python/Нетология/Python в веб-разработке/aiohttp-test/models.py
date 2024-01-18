@@ -29,8 +29,15 @@ class User(Base):
     password: Mapped[str] = mapped_column(String(60), nullable=False)
     registration_time: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=func.now())
 
+    @property
+    def dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'registration_time': int(self.registration_time.timestamp())
+        }
+
 
 async def init_orm():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-

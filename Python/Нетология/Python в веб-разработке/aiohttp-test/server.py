@@ -1,5 +1,6 @@
 import json
 from aiohttp import web
+from sqlalchemy.exc import IntegrityError
 
 from models import User, engine, init_orm, Session
 
@@ -26,7 +27,16 @@ async def init_db(app: web.Application):
     await engine.dispose()
 
 
+@web.middleware
+async def session_middleware(request: web.Request, handler):
+    async with Session() as session:
+        request.session = session
+        response = await handler(request)
+        return response
+
+
 app.cleanup_ctx.append(init_db)
+app.middlewares.append(session_middleware)
 
 
 def get_http_error(error_class, message):
@@ -43,28 +53,51 @@ async def get_user_by_id(session: Session, user_id: int):
     return user
 
 
+async def add_user(session: Session, user: int):
+    try:
+        session.add(user)
+        await session.commit()
+    except IntegrityError:
+        raise get_http_error(web.HTTPConflict, f'User with name {user.name} already exists')
+    return user
+
+
 class UserView(web.View):
 
     @property
+    def session(self) -> Session:
+        return self.request.session
+
+    @property
     def user_id(self):
-        return self.request.match_info['user_id']
+        return int(self.request.match_info['user_id'])
 
     async def get_user(self):
-        async with Session() as session:
-            return await get_user_by_id(session, self.user_id)
+        return await get_user_by_id(self.session, self.user_id)
 
     async def get(self):
-        user = self.user_id
+        user = await self.get_user()
+        return web.json_response(user.dict)
 
     async def post(self):
-        pass
+        json_data = await self.request.json()
+        user = User(**json_data)
+        await add_user(self.session, user)
+        # print(user.id, user.name)
+        return web.json_response({'id': user.id})
 
     async def patch(self):
-        pass
+        json_data = await self.request.json()
+        user = await self.get_user()
+        for field, value in json_data.items():
+            setattr(user, field, value)
+        await add_user(self.session, user)
+        return web.json_response(user.dict)
 
     async def delete(self):
-        pass
-
+        user = await self.get_user()
+        await self.session.delete(user)
+        return web.json_response({'status': 'delete'})
 
 app.add_routes([
     web.get('/user/{user_id:\d+}', UserView),
